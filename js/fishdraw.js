@@ -811,19 +811,21 @@ function draw_svg(polylines, options = {}){
   // Print Accession ID & PTR Metadata directly on the plate (Matching Geometry Vault)
   let accessionId = options.accessionId || (options.metrics && options.metrics.accessionId) || (options.specimen && options.specimen.accessionId) || "";
   let hashHex = options.hashHex || (options.metrics && options.metrics.hashHex) || (options.specimen && options.specimen.metrics && options.specimen.metrics.hashHex) || "";
+  let taxon = options.taxon || (options.metrics && options.metrics.taxon) || (options.specimen && options.specimen.metrics && options.specimen.metrics.taxon) || "";
   let metaColor = options.metaColor || options.stroke || "#7A7068";
   let metrics = options.metrics || (options.specimen && options.specimen.metrics) || null;
   let sl = metrics && metrics.standardLength ? ` // SL:${metrics.standardLength}` : "";
   let bd = metrics && metrics.bodyDepth ? ` // BD:${metrics.bodyDepth}` : "";
 
-  if (accessionId || hashHex) {
+  if (accessionId || hashHex || taxon) {
     let fontSize = Math.max(7.5, Math.min(10, Math.round(Math.min(width, height) * 0.018)));
     o += `  <g id="archival-plate-stamps" font-family="'JetBrains Mono', monospace" font-size="${fontSize}" letter-spacing="0.08em" fill="${metaColor}">\n`;
     o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId || 'FV-ARCHIVAL'}${sl}${bd}</text>\n`;
     if (hashHex) {
       o += `    <text x="${width - margin - 6}" y="${margin + 13}" text-anchor="end">PTR:${hashHex}</text>\n`;
     }
-    o += `    <text x="${margin + 6}" y="${margin + 13}">ARCHIVAL PISCES // FIG. 01</text>\n`;
+    let headerLabel = taxon ? `ARCHIVAL PISCES // ${taxon.toUpperCase()}` : `ARCHIVAL PISCES // FIG. 01`;
+    o += `    <text x="${margin + 6}" y="${margin + 13}">${headerLabel}</text>\n`;
     o += `  </g>\n`;
   }
 
@@ -881,19 +883,21 @@ function draw_svg_anim(polylines, speed = 0.005, options = {}){
   // Print Accession ID & PTR Metadata on animated plate as well
   let accessionId = options.accessionId || (options.metrics && options.metrics.accessionId) || (options.specimen && options.specimen.accessionId) || "";
   let hashHex = options.hashHex || (options.metrics && options.metrics.hashHex) || (options.specimen && options.specimen.metrics && options.specimen.metrics.hashHex) || "";
+  let taxon = options.taxon || (options.metrics && options.metrics.taxon) || (options.specimen && options.specimen.metrics && options.specimen.metrics.taxon) || "";
   let metaColor = options.metaColor || options.stroke || "#7A7068";
   let metrics = options.metrics || (options.specimen && options.specimen.metrics) || null;
   let sl = metrics && metrics.standardLength ? ` // SL:${metrics.standardLength}` : "";
   let bd = metrics && metrics.bodyDepth ? ` // BD:${metrics.bodyDepth}` : "";
 
-  if (accessionId || hashHex) {
+  if (accessionId || hashHex || taxon) {
     let fontSize = Math.max(7.5, Math.min(10, Math.round(Math.min(width, height) * 0.018)));
     o += `  <g id="archival-plate-stamps" font-family="'JetBrains Mono', monospace" font-size="${fontSize}" letter-spacing="0.08em" fill="${metaColor}">\n`;
     o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId || 'FV-ARCHIVAL'}${sl}${bd}</text>\n`;
     if (hashHex) {
       o += `    <text x="${width - margin - 6}" y="${margin + 13}" text-anchor="end">PTR:${hashHex}</text>\n`;
     }
-    o += `    <text x="${margin + 6}" y="${margin + 13}">ARCHIVAL PISCES // FIG. 01</text>\n`;
+    let headerLabel = taxon ? `ARCHIVAL PISCES // ${taxon.toUpperCase()}` : `ARCHIVAL PISCES // FIG. 01`;
+    o += `    <text x="${margin + 6}" y="${margin + 13}">${headerLabel}</text>\n`;
     o += `  </g>\n`;
   }
 
@@ -2591,7 +2595,67 @@ function generate_params(){
 }
 
 
-function binomen(){
+const CONFIG_DICT = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+function generateSecureHash(inputString){
+  if (inputString === undefined || inputString === null) return 0x5EED;
+  if (typeof inputString === 'number') return Math.abs(Math.floor(inputString)) % 1544804416;
+  const sanitizedString = String(inputString).replace(/[^a-zA-Z0-9\s-_.,]/g, '').trim();
+  let hashValue = 0x811c9dc5; 
+  for (let i = 0; i < sanitizedString.length; i++) {
+    hashValue ^= sanitizedString.charCodeAt(i);
+    hashValue = Math.imul(hashValue, 0x01000193);
+  }
+  return Math.abs(hashValue) % 1544804416; // 34^6 max value for lossless 6-char recovery
+}
+
+function generateSequenceIdentifier(hash){
+  const dictionary = CONFIG_DICT;
+  const prefix = (hash % 89) + 10;
+  let suffix = "";
+  let mutableHash = hash;
+  for (let i = 0; i < 6; i++) {
+    suffix += dictionary.charAt(mutableHash % dictionary.length);
+    mutableHash = Math.floor(mutableHash / dictionary.length);
+  }
+  return `FV-${prefix}-${suffix}`;
+}
+
+function recoverHashFromId(id){
+  if (!id || typeof id !== 'string') return null;
+  const clean = id.trim().toUpperCase();
+  const parts = clean.split('-');
+  if (parts.length < 2) return null;
+  const suffix = parts[parts.length - 1];
+  if (suffix.length !== 6) return null;
+  
+  let recoveredHash = 0;
+  let multiplier = 1;
+  for (let i = 0; i < 6; i++) {
+    const char = suffix.charAt(i);
+    const val = CONFIG_DICT.indexOf(char);
+    if (val === -1) return null;
+    recoveredHash += val * multiplier;
+    multiplier *= CONFIG_DICT.length;
+  }
+  return recoveredHash;
+}
+
+function isBinomen(str){
+  if (!str || typeof str !== 'string') return false;
+  const trimmed = str.trim();
+  return /^[A-Z][a-z]{2,}\s+[a-z]{3,}$/.test(trimmed);
+}
+
+function binomen(seedOrHash){
+  let savedJsr = jsr;
+  if (seedOrHash !== undefined && seedOrHash !== null) {
+    if (typeof seedOrHash === 'number') {
+      jsr = (seedOrHash >>> 0) || 0x5EED;
+    } else {
+      jsr = generateSecureHash(seedOrHash);
+    }
+  }
   let data =[["A","AB","AL","AN","AP","AR","AU","BA","BE","BO","BRA","CA","CAR","CENT","CHAE","CHAN","CHI","CHRO","CHRY","CO","CTE","CY","CYP","DE","E","EU","GA","GAS","GNA","GO","HE","HIP","HO","HY","LA","LAB","LE","LI","LO","LU","MAC","ME","MIC","MO","MU","MY","NA","NAN","NE","NO","O","ON","OP","OS","PA","PER","PHO","PI","PLA","PLEU","PO","PSEU","PTE","RA","RHI","RHOM","RU","SAL","SAR","SCA","SCOM","SE","SI","STE","TAU","TEL","THO","TRI","XE","XI","BATHY","ACANTHO","CHLAMYDO","TRACHY","OPHID","ZEUS","SYN","ICTIO","HAPLO","NOTO","SCORP","GYMNO","RHINO","PERCO","MACRO","LOPHIO"],
   ["BE","BI","BO","BU","CA","CAM","CAN","CE","CENT","CHA","CHEI","CHI","CHO","CHY","CI","CIRR","CO","DI","DO","DON","DOP","GA","GAS","GO","HI","HYN","LA","LAB","LE","LEOT","LI","LICH","LIS","LO","LOS","LU","LY","MA","ME","MI","MICH","MO","MU","NA","NE","NEC","NI","NO","NOCH","NOP","NOS","PA","PE","PEN","PHA","PHI","PHO","PHY","PHYO","PI","PIP","PIS","PO","POG","POPH","RA","RAE","RAM","REOCH","RI","RICH","RIP","RIS","RO","ROI","ROP","ROS","RY","RYN","SE","SO","TA","TE","TEL","THAL","THE","THO","THOP","THU","TI","TICH","TO","TOG","TOP","TOS","VA","XI","XO"],
   ["BIUS","BUS","CA","CHUS","CION","CON","CUS","DA","DES","DEUS","DON","DUS","GER","GON","GUS","HUS","LA","LEA","LIS","LIUS","LUS","MA","MIS","MUS","NA","NIA","NIO","NIUS","NOPS","NUS","PHEUS","PHIS","PIS","PUS","RA","RAS","RAX","RIA","RION","RIS","RUS","RYS","SA","SER","SIA","SIS","SUS","TER","TES","TEUS","THUS","THYS","TIA","TIS","TUS","TYS"],
@@ -2619,7 +2683,9 @@ function binomen(){
   }
   name += choice(data[5],freq[5]);
   name = name.replace(/([A-Z])\1\1+/g,'$1$1');
-  return name[0]+name.slice(1).toLowerCase();
+  let result = name[0]+name.slice(1).toLowerCase();
+  jsr = savedJsr;
+  return result;
 }
 
 let hershey_raw = {
@@ -2770,13 +2836,51 @@ function main(seed){
 }
 
 function generateSpecimen(options = {}){
-  let seed = options.seed;
-  if (!seed || typeof seed !== "string" || !seed.trim()){
-    jsr = ~~(Math.random() * 10000000);
-    seed = binomen();
-  } else {
-    seed = seed.trim();
+  let rawInput = options.narrative !== undefined ? options.narrative : options.seed;
+  let idInput = options.id || null;
+  let hashVal = null;
+  let narrative = "";
+
+  // 1. Check if ID was explicitly provided
+  if (idInput) {
+    hashVal = recoverHashFromId(idInput);
+    if (hashVal !== null) {
+      narrative = options.narrative || idInput;
+    }
   }
+
+  // 2. Check if rawInput matches an ID pattern (e.g. FV-42-3UD74N or 42-3UD74N)
+  if (hashVal === null && rawInput) {
+    const trimmedInput = String(rawInput).trim();
+    if (/^(?:FV-)?\d{2}-[0-9A-HJ-NP-Z]{6}$/i.test(trimmedInput)) {
+      const rec = recoverHashFromId(trimmedInput);
+      if (rec !== null) {
+        hashVal = rec;
+        narrative = trimmedInput;
+      }
+    }
+  }
+
+  // 3. Narrative injection -> FNV-1a Hash -> Seed
+  if (hashVal === null) {
+    if (rawInput && String(rawInput).trim()) {
+      narrative = String(rawInput).trim();
+      hashVal = generateSecureHash(narrative);
+    } else {
+      hashVal = Math.floor(Math.random() * 1544804416);
+      narrative = binomen(hashVal);
+    }
+  }
+
+  // 4. Derive ID and Taxon Name
+  // Sequence: Narrative -> Seed (hashVal) -> ID (accessionId) -> Taxon Name
+  let accessionId = generateSequenceIdentifier(hashVal);
+  let hexHash = (hashVal >>> 0).toString(16).toUpperCase().padStart(8, '0');
+
+  // If options.taxon is explicitly specified, use it.
+  // Else if rawInput is already a clean 2-word Linnaean binomen (e.g. "Salmo salar"), preserve it.
+  // Otherwise, deterministically derive pseudo-Latin binomen from hashVal!
+  let taxon = options.taxon || (isBinomen(narrative) ? narrative : binomen(hashVal));
 
   let width = options.width || 600;
   let height = options.height || 400;
@@ -2784,7 +2888,8 @@ function generateSpecimen(options = {}){
   let includeLabel = options.includeLabel !== false;
 
   perlin = null;
-  jsr = str_to_seed(seed);
+  // Seed the procedural fish anatomy strictly with hashVal
+  jsr = (hashVal >>> 0) || 0x5EED;
 
   let params = generate_params();
   if (options.customParams){
@@ -2792,7 +2897,8 @@ function generateSpecimen(options = {}){
   }
 
   let rawDrawing = fish(params);
-  let label = includeLabel ? (seed.endsWith('.') ? seed : seed + '.') : null;
+  // Bottom Hershey label: use the derived Taxon name
+  let label = includeLabel ? (taxon.endsWith('.') ? taxon : taxon + '.') : null;
   let reframed = reframe(rawDrawing, pad, label, width - pad * 2, height - pad * 2);
   let cleaned = cleanup(reframed);
 
@@ -2801,11 +2907,6 @@ function generateSpecimen(options = {}){
   for (let i = 0; i < cleaned.length; i++){
     pointCount += cleaned[i].length;
   }
-
-  let hashVal = str_to_seed(seed);
-  let hexHash = (hashVal >>> 0).toString(16).toUpperCase().padStart(8, '0');
-  let prefix = (hashVal % 89) + 10;
-  let accessionId = `FV-${prefix}-${hexHash.slice(0, 4)}`;
 
   const scaleNames = ["Minute / Granular", "Ctenoid (Comb-edged)", "Cycloid (Smooth)", "Ganoid (Rhombic enamel)"];
   const patternNames = [
@@ -2851,8 +2952,9 @@ function generateSpecimen(options = {}){
   let barbelsText = cephalicList.length > 0 ? cephalicList.join(" + ") : "Absent";
 
   let metrics = {
-    seed: seed,
-    taxon: seed,
+    narrative: narrative,
+    seed: hashVal,
+    taxon: taxon,
     accessionId: accessionId,
     hashHex: `0x${hexHash}`,
     standardLength: `${Math.round(params.body_length)} mm`,
@@ -2870,7 +2972,9 @@ function generateSpecimen(options = {}){
   };
 
   return {
-    seed,
+    narrative,
+    seed: hashVal,
+    taxon,
     accessionId,
     params,
     metrics,
@@ -2894,6 +2998,10 @@ if (typeof window !== "undefined"){
     draw_ps,
     binomen,
     str_to_seed,
+    generateSecureHash,
+    generateSequenceIdentifier,
+    recoverHashFromId,
+    isBinomen,
     get_bbox,
     put_text,
     reset_noise: () => { perlin = null; }
@@ -2913,7 +3021,11 @@ if (typeof module !== "undefined"){
     draw_svg_anim,
     draw_ps,
     binomen,
-    str_to_seed
+    str_to_seed,
+    generateSecureHash,
+    generateSequenceIdentifier,
+    recoverHashFromId,
+    isBinomen
   };
   if (require.main === module) {
     let seed = undefined;

@@ -140,26 +140,29 @@
 
             <!-- Section 02: Procedural Anatomy -->
             <section id="procedural-anatomy" class="surface-card p-8 rounded-sm space-y-6">
-                <h2 class="font-tech text-sm font-semibold border-b border-[#DDD5C5] pb-2 text-[#8B1A1A]">02. PROCEDURAL_ANATOMY & MORPHOMETRIC_LOGIC</h2>
+                <h2 class="font-tech text-sm font-semibold border-b border-[#DDD5C5] pb-2 text-[#8B1A1A]">02. PROCEDURAL_ANATOMY & NARRATIVE_INJECTION_LOGIC</h2>
                 <p class="text-sm text-[#2A2520] leading-relaxed">
-                    Specimens are algorithmically synthesized through a multi-pass anatomical pipeline. Narrative strings are hashed via a bitwise PRNG into deterministic anatomical parameters:
+                    Specimens are algorithmically synthesized through a multi-pass anatomical pipeline. Injected narrative sequences (such as blog post titles, prompts, or article excerpts) establish an immutable deterministic pipeline:
                 </p>
+                <div class="bg-[#E8E0D0] p-4 border border-[#DDD5C5] font-tech text-xs text-[#2A2520] font-semibold text-center tracking-wider">
+                    NARRATIVE PROSE &rarr; FNV-1a SEED HASH &rarr; ACCESSION ID (FV-XX-XXXXXX) &rarr; DETERMINISTIC TAXON NAME
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div class="bg-[#E8E0D0] p-4 border border-[#DDD5C5] space-y-1">
                         <p class="font-tech text-[10px] font-bold text-[#8B1A1A]">01. BODY CURVATURE & PROFILE</p>
-                        <p class="text-[#2A2520]">Calculates standard length ($SL$) and body depth ($BD$). Curve styles vary between sinusoidal swimming gestures and arcuate postures.</p>
+                        <p class="text-[#2A2520]">Calculates standard length ($SL$) and body depth ($BD$). Curve styles vary between sinusoidal swimming gestures, arcuate postures, and disciform silhouettes.</p>
                     </div>
                     <div class="bg-[#E8E0D0] p-4 border border-[#DDD5C5] space-y-1">
                         <p class="font-tech text-[10px] font-bold text-[#8B1A1A]">02. DORSAL & CAUDAL FINS</p>
-                        <p class="text-[#2A2520]">Generates spine counts, segmented soft-rays, and tail morphology (Forked, Emarginate, Truncate, Rounded, Lunate, or Heterocercal).</p>
+                        <p class="text-[#2A2520]">Generates spine counts, segmented soft-rays, and tail morphology (Forked, Emarginate, Truncate, Rounded, Lunate, Lyretail, or Heterocercal).</p>
                     </div>
                     <div class="bg-[#E8E0D0] p-4 border border-[#DDD5C5] space-y-1">
                         <p class="font-tech text-[10px] font-bold text-[#8B1A1A]">03. MERISTIC SCALE CLASSIFICATION</p>
                         <p class="text-[#2A2520]">Synthesizes dermal patterns: Cycloid (smooth), Ctenoid (comb-edged), Ganoid (rhombic enamel), and granular placoid tessellations.</p>
                     </div>
                     <div class="bg-[#E8E0D0] p-4 border border-[#DDD5C5] space-y-1">
-                        <p class="font-tech text-[10px] font-bold text-[#8B1A1A]">04. CEPHALIC STRUCTURE & DENTITION</p>
-                        <p class="text-[#2A2520]">Computes jaw opening, eye diameter, maxillary and mental barbels, and dentition (dentate with millimeter spines vs. edentulous).</p>
+                        <p class="font-tech text-[10px] font-bold text-[#8B1A1A]">04. CEPHALIC STRUCTURE & TAXON SCRIBE</p>
+                        <p class="text-[#2A2520]">Computes jaw opening, eye diameter, maxillary and mental barbels, dentition, and scribes the derived Latin binomial nomenclature in vector Hershey script.</p>
                     </div>
                 </div>
             </section>
@@ -173,9 +176,9 @@
                 <div class="bg-[#E8E0D0] p-4 border border-[#DDD5C5] space-y-3">
                     <p class="font-tech text-[10px] text-[#2A2520] font-bold">IFRAME_SNIPPET</p>
                     <pre class="bg-white/60 border-none m-0"><code>&lt;iframe 
-  src="https://fish-vault.glassgallery.my.id/?mode=embed&seed=Salmo%20salar&w=3&h=2" 
-  width="500" 
-  height="500" 
+  src="https://fish-vault.glassgallery.my.id/?mode=embed&narrative=The%20Future%20of%20Distributed%20Systems&w=3&h=2" 
+  width="600" 
+  height="400" 
   frameborder="0" 
   style="border: 1px solid #DDD5C5; border-radius: 4px;"&gt;
 &lt;/iframe&gt;</code></pre>
@@ -184,9 +187,10 @@
                     <p class="font-tech text-[10px] text-[#7A7068] font-bold">SUPPORTED URL PARAMETERS</p>
                     <ul class="list-disc pl-5 space-y-1 text-[#2A2520]">
                         <li><code>mode</code>: Set to <code>embed</code> to strip UI chrome and render pure archival plate.</li>
-                        <li><code>seed</code> / <code>id</code>: Narrative string, species name, or accession ID.</li>
+                        <li><code>narrative</code> / <code>seed</code>: Blog title, essay prompt, phrase, or binomial taxon string.</li>
+                        <li><code>id</code>: Accession identifier (e.g. <code>FV-82-DHMSR8</code>) for exact specimen recovery.</li>
                         <li><code>w</code> &amp; <code>h</code>: Aspect ratio dimension ratio (e.g., <code>?w=3&amp;h=2</code>).</li>
-                        <li><code>mode_render</code>: <code>static</code> (default) or <code>anim</code> (live pen plotter simulation).</li>
+                        <li><code>render</code> (or <code>mode_render</code>): <code>static</code> (default) or <code>anim</code> (live pen plotter simulation).</li>
                     </ul>
                     <p class="text-[11px] text-[#7A7068] pt-1">
                         <strong>Interactive Mode Selector:</strong> On the embed itself, an interactive micro-badge in the bottom-right corner allows viewers to switch between <code>STATIC</code> and <code>ANIM</code> playback dynamically.
@@ -242,14 +246,14 @@ vaultIframe.contentWindow.postMessage({
             <section id="id-reconstruction" class="surface-card p-8 rounded-sm space-y-4">
                 <h2 class="font-tech text-sm font-semibold border-b border-[#DDD5C5] pb-2 text-[#8B1A1A]">06. ACCESSION_ID & RECONSTRUCTION_LOGIC</h2>
                 <p class="text-sm text-[#2A2520] leading-relaxed">
-                    Every specimen receives a deterministic accession identifier (e.g., <code>FV-25-9AC9</code>). The identifier is derived directly from the 32-bit PRNG seed hash:
+                    Every specimen receives a deterministic accession identifier (e.g., <code>FV-82-DHMSR8</code>). The identifier encodes a 6-character Base34 hash suffix, allowing lossless 100% bidirectional reconstruction:
                 </p>
                 <div class="bg-[#E8E0D0] p-4 border border-[#DDD5C5]">
                     <p class="font-tech text-[10px] text-[#2A2520] mb-2 font-bold">RECOVERY_PROTOCOL</p>
-                    <code class="text-xs">GET /?id=FV-25-9AC9</code>
+                    <code class="text-xs">GET /?id=FV-82-DHMSR8</code>
                 </div>
                 <p class="text-xs text-[#2A2520]">
-                    In the main vault interface, inserting an accession ID into the <code>RECOVER FROM ID</code> input regenerates the exact morphological specimen instantly.
+                    In the main vault interface, inserting an accession ID into the <code>RECOVER FROM ID</code> input regenerates the exact morphological specimen and its taxonomic Latin name instantly without server state.
                 </p>
             </section>
 
@@ -257,13 +261,13 @@ vaultIframe.contentWindow.postMessage({
             <section id="cms-integration" class="surface-card p-8 rounded-sm space-y-4">
                 <h2 class="font-tech text-sm font-semibold border-b border-[#DDD5C5] pb-2 text-[#8B1A1A]">07. CMS & WORDPRESS_INTEGRATION_GUIDE</h2>
                 <p class="text-sm text-[#2A2520] leading-relaxed">
-                    Automate featured article or taxonomy plates by embedding deterministic specimens into WordPress, Ghost, or static site generators:
+                    Automate featured article or taxonomy plates by embedding deterministic specimens into WordPress, Ghost, or static site generators using the article title as narrative:
                 </p>
                 <pre class="text-xs"><code>// WordPress functions.php: Generate custom specimen plate embed for articles
 function get_fish_vault_specimen_embed($post_title) {
-    $encoded_title = urlencode($post_title);
-    $url = "https://fish-vault.glassgallery.my.id/?mode=embed&seed={$encoded_title}&w=3&h=2";
-    return '&lt;iframe src="' . esc_url($url) . '" width="500" height="500" frameborder="0" style="border:1px solid #DDD5C5; border-radius:4px;"&gt;&lt;/iframe&gt;';
+    $encoded_narrative = urlencode($post_title);
+    $url = "https://fish-vault.glassgallery.my.id/?mode=embed&narrative={$encoded_narrative}&w=3&h=2";
+    return '&lt;iframe src="' . esc_url($url) . '" width="600" height="400" frameborder="0" style="border:1px solid #DDD5C5; border-radius:4px;" title="Archival Pisces Specimen"&gt;&lt;/iframe&gt;';
 }</code></pre>
             </section>
 
@@ -273,34 +277,43 @@ function get_fish_vault_specimen_embed($post_title) {
                 <p class="text-sm text-[#2A2520] leading-relaxed">
                     <code>fishdraw.js</code> exposes the global <code>window.FishDraw</code> object in browser environments and standard <code>module.exports</code> in Node.js:
                 </p>
-                <pre><code>// 1. Generate specimen with full telemetry
+                <pre><code>// 1. Generate specimen via narrative injection (Narrative -> Seed -> ID -> Taxon)
 const specimen = window.FishDraw.generateSpecimen({
-    seed: 'Thunnus thynnus',
+    narrative: 'Deep Sea Hydrothermal Ecology',
     width: 600,
     height: 400,
     pad: 30,
     includeLabel: true
 });
 
-console.log(specimen.accessionId); // "FV-25-9AC9"
-console.log(specimen.metrics.standardLength); // "342 mm"
-console.log(specimen.polylines); // Array of [[x, y], ...] strokes
+console.log(specimen.accessionId); // "FV-82-DHMSR8"
+console.log(specimen.taxon); // "Aptocebus vadens"
+console.log(specimen.metrics.standardLength); // "320 mm"
+console.log(specimen.metrics.hashHex); // "0x17B80F83"
 
-// 2. Render clean vector SVG with archival plate stamps
+// 2. Bidirectional recovery utilities
+const hash = window.FishDraw.generateSecureHash('Deep Sea Hydrothermal Ecology');
+const id = window.FishDraw.generateSequenceIdentifier(hash);
+const recoveredHash = window.FishDraw.recoverHashFromId(id);
+const taxon = window.FishDraw.binomen(hash);
+
+// 3. Render clean vector SVG with archival plate stamps
 const svgString = window.FishDraw.draw_svg(specimen.polylines, {
     width: 600,
     height: 400,
     stroke: '#2A2520',
     bg: '#EFE9DC',
-    specimen: specimen
+    specimen: specimen,
+    taxon: specimen.taxon
 });
 
-// 3. Render animated SMIL pen-plotter SVG
+// 4. Render animated SMIL pen-plotter SVG
 const animSvgString = window.FishDraw.draw_svg_anim(specimen.polylines, 0.005, {
     width: 600,
     height: 400,
     stroke: '#2A2520',
-    specimen: specimen
+    specimen: specimen,
+    taxon: specimen.taxon
 });</code></pre>
             </section>
         </main>

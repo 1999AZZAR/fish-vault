@@ -31,16 +31,20 @@
 
 ## ✨ Features
 
-### 1. Deterministic Biological Synthesis
-Transform narrative sequences, phrases, or names into reproducible morphological parameters. The engine calculates body curvature, spine density, scale morphology, dentition, and pseudo-Latin binomens (*e.g. Salmo salar*, *Chrosomus macrocephalus*).
-> **Determinism Guarantee:** Features an engine patch ensuring the internal PRNG noise table resets cleanly between runs, guaranteeing that identical seeds yield identical specimens across prolonged web sessions.
+### 1. Deterministic Narrative Injection Pipeline
+Transform arbitrary narrative sequences (blog titles, essay prompts, article excerpts, or ideas) into reproducible biological specimens:
+$$\text{Narrative String} \longrightarrow \text{Seed (FNV-1a Hash)} \longrightarrow \text{Accession ID (FV-XX-XXXXXX)} \longrightarrow \text{Taxon Name (Latin Binomen)}$$
+- **Blog / CMS Integration Ready:** Authors can pass any blog post title (e.g. `?narrative=The%20Future%20of%20Distributed%20Systems`) to automatically synthesize an authentic, repeatable Linnaean natural history plate complete with an accession ID, PTR hash, and scientific binomial name (*e.g. Aptocebus vadens*).
+- **100% Bidirectional Recovery:** The accession identifier embeds a 6-character Base34 hash suffix. Pasting an ID into `RECOVER FROM ID` or querying `?id=FV-XX-XXXXXX` losslessly regenerates the identical specimen, taxon, and morphology without requiring a database.
+- **Determinism Guarantee:** Features an engine patch ensuring the internal PRNG noise table resets cleanly between runs, guaranteeing that identical seeds yield identical specimens across prolonged web sessions.
 
 ### 2. Dual Render Modes
 - **Static Vector Plate:** Instantaneous rendering of clean SVG vector strokes.
-- **Plotter Simulation:** Live animated SMIL pen plotter simulation illustrating each stroke being drawn across the plate in real-time, accompanied by a `[ RE-PLOT ]` button.
+- **Plotter Simulation:** Live animated SMIL pen plotter simulation illustrating each stroke being drawn across the plate in real-time.
 
 ### 3. Morphometric Telemetry Dashboard
 Real-time extraction and inspection of procedural biological measurements:
+- **Derived Taxon Name:** Prominently displays the pseudo-Latin binomial nomenclature scribed on the plate.
 - **Standard Length (SL) & Body Depth (BD):** Morphological proportions and fin aspect ratios.
 - **Curvature Index:** Measured percentage and curve profile (Sinusoidal vs. Arcuate).
 - **Meristic Scale Classification:** Cycloid, Ctenoid, Ganoid, or Placoid dermal structures.
@@ -111,21 +115,23 @@ The service will be accessible locally at `http://localhost:8086`.
 
 | Parameter | Type | Description | Example |
 |---|---|---|---|
-| `seed` | String | Narrative sequence or species name | `?seed=Salmo%20salar` |
-| `id` | String | Specimen accession ID for direct recovery | `?id=FV-25-9AC9` |
+| `narrative` | String | Blog post title, prompt, or phrase to inject | `?narrative=The%20Art%20of%20Code` |
+| `seed` | String | Seed string or explicit species name | `?seed=Salmo%20salar` |
+| `id` | String | Specimen accession ID for direct recovery | `?id=FV-82-DHMSR8` |
 | `w` & `h` | Number | Aspect ratio width and height | `?w=3&h=2` |
 | `mode` | String | Set to `embed` for pure archival specimen view | `?mode=embed` |
-| `mode_render` | String | `static` (default) or `anim` (live plotter simulation) | `?mode_render=anim` |
+| `render` | String | `static` (default) or `anim` (live plotter simulation) | `?render=anim` |
 
 ### Iframe Embed Example
 
 ```html
 <iframe 
-  src="https://fish-vault.glassgallery.my.id/?mode=embed&seed=Salmo%20salar&w=3&h=2" 
-  width="500" 
-  height="500" 
+  src="https://fish-vault.glassgallery.my.id/?mode=embed&narrative=The%20Art%20of%20Code&w=3&h=2" 
+  width="600" 
+  height="400" 
   frameborder="0" 
-  style="border:1px solid #DDD5C5; border-radius:4px;">
+  style="border:1px solid #DDD5C5; border-radius:4px;"
+  title="Archival Pisces Specimen">
 </iframe>
 ```
 
