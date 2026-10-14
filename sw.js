@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fish-vault-v1.0.0';
+const CACHE_NAME = 'fish-vault-v1.0.2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -6,7 +6,7 @@ const ASSETS = [
   '/icon-192.svg',
   '/icon-512.svg',
   '/icon-maskable.svg',
-  '/js/fishdraw.js',
+  '/js/fishdraw.js?v=1.0.2',
   '/docs.html',
   'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
@@ -37,6 +37,23 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
+  // Network-first for HTML, JS and navigation requests
+  if (event.request.mode === 'navigate' || event.request.url.includes('/index.html') || event.request.url.includes('/js/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((fetchResponse) => {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, fetchResponse.clone());
+            return fetchResponse;
+          });
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-first for other static assets
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request).then((fetchResponse) => {
@@ -45,10 +62,6 @@ self.addEventListener('fetch', (event) => {
           return fetchResponse;
         });
       });
-    }).catch(() => {
-      if (event.request.mode === 'navigate') {
-        return caches.match('/index.html');
-      }
     })
   );
 });

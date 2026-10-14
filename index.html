@@ -200,7 +200,7 @@
         }
 
         #fullscreen-viewer.active {
-            display: flex;
+            display: block !important;
             animation: fadeIn 0.25s ease-out;
         }
 
@@ -210,10 +210,11 @@
         }
 
         #viewer-content svg {
-            max-width: 95%;
-            max-height: 95%;
+            max-width: 100%;
+            max-height: 100%;
             width: auto;
             height: auto;
+            object-fit: contain;
         }
 
         /* Embed Mode */
@@ -294,13 +295,6 @@
             height: 100% !important;
             object-fit: contain !important;
         }
-        body[data-mode="embed"] #embed-mode-switcher {
-            display: flex !important;
-            position: absolute !important;
-            bottom: 8px !important;
-            right: 8px !important;
-            z-index: 40 !important;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-start p-4 sm:p-8">
@@ -324,27 +318,29 @@
     </svg>
 
     <!-- Fullscreen Viewer Modal -->
-    <div id="fullscreen-viewer" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-8">
-        <div class="absolute inset-0 bg-[#0B1120] bg-opacity-90 backdrop-blur-md"></div>
-        <div class="relative w-full h-full max-w-7xl max-h-[92vh] flex flex-col z-10">
-            <div class="flex justify-between items-center mb-3 px-2">
-                <div class="flex items-center gap-3">
-                    <span id="viewer-title" class="font-tech text-xs text-[#E8E0D0] font-semibold tracking-wider">ICHTHYOLOGICAL SPECIMEN PLATE</span>
-                    <span id="viewer-seq" class="font-tech text-[10px] text-[#94A3B8]"></span>
+    <div id="fullscreen-viewer" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-[#2A2520] bg-opacity-95 backdrop-blur-sm cursor-pointer"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-8 pointer-events-none">
+            <div class="relative w-full h-full max-w-7xl max-h-[90vh] flex flex-col pointer-events-auto">
+                <div class="flex justify-between items-center mb-4 px-2">
+                    <div class="flex items-center gap-4">
+                        <span id="viewer-title" class="font-tech text-[12px] text-[#E8E0D0] font-semibold">SPECIMEN VIEWER</span>
+                        <span id="viewer-seq" class="font-tech text-[10px] text-[#7A7068]"></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="viewer-download-svg" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-2 border border-[#7A7068] hover:border-[#8B1A1A] bg-[#2A2520] cursor-pointer">
+                            <i class="fa-solid fa-code"></i> SVG
+                        </button>
+                        <button id="viewer-download-png" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-2 border border-[#7A7068] hover:border-[#8B1A1A] bg-[#2A2520] cursor-pointer">
+                            <i class="fa-solid fa-download"></i> PNG
+                        </button>
+                        <button id="viewer-close" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-2 border border-[#7A7068] hover:border-[#8B1A1A] bg-[#2A2520] cursor-pointer">
+                            <i class="fa-solid fa-times"></i> CLOSE
+                        </button>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button id="viewer-download-svg" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-1.5 border border-[#475569] hover:border-[#8B1A1A] bg-[#1E293B]">
-                        <i class="fa-solid fa-code"></i> SVG
-                    </button>
-                    <button id="viewer-download-png" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-1.5 border border-[#475569] hover:border-[#8B1A1A] bg-[#1E293B]">
-                        <i class="fa-solid fa-download"></i> PNG
-                    </button>
-                    <button id="viewer-close" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-1.5 border border-[#475569] hover:border-[#8B1A1A] bg-[#1E293B]">
-                        <i class="fa-solid fa-times"></i> CLOSE
-                    </button>
+                <div id="viewer-content" class="flex-1 flex items-center justify-center bg-[var(--archival-surface)] rounded-sm border border-[#7A7068] overflow-hidden">
                 </div>
-            </div>
-            <div id="viewer-content" class="flex-1 flex items-center justify-center bg-[var(--archival-surface)] rounded-sm border border-[#475569] overflow-hidden p-6 relative">
             </div>
         </div>
     </div>
@@ -392,13 +388,6 @@
                 </div>
             </div>
 
-            <!-- Embed Minimal Mode Switcher (visible in embed mode, defaults to static) -->
-            <div id="embed-mode-switcher" class="hidden absolute bottom-3 right-3 z-30 font-tech text-[9px] items-center border border-[var(--archival-muted)] rounded-sm bg-[var(--archival-surface)]/90 backdrop-blur-xs shadow-xs p-0.5 opacity-80 hover:opacity-100 transition-opacity">
-                <button id="embed-static-btn" class="px-2 py-0.5 text-[var(--archival-fg)] font-semibold rounded-xs transition-colors">STATIC</button>
-                <button id="embed-anim-btn" class="px-2 py-0.5 text-[var(--archival-meta)] hover:text-[var(--archival-fg)] rounded-xs transition-colors flex items-center gap-1">
-                    <i class="fa-solid fa-play text-[7px]"></i> ANIM
-                </button>
-            </div>
         </div>
 
         <!-- Right: Control Matrix & Morphometrics (Col 4-5) -->
@@ -605,7 +594,7 @@
     </main>
 
     <!-- Core Engine Scripts -->
-    <script src="js/fishdraw.js"></script>
+    <script src="js/fishdraw.js?v=1.0.2"></script>
     <script>
         (function() {
             // Configuration & State
@@ -636,9 +625,6 @@
                 ratioBtns: document.querySelectorAll('.ratio-btn'),
                 modeStaticBtn: document.getElementById('mode-static-btn'),
                 modeAnimBtn: document.getElementById('mode-anim-btn'),
-                embedModeSwitcher: document.getElementById('embed-mode-switcher'),
-                embedStaticBtn: document.getElementById('embed-static-btn'),
-                embedAnimBtn: document.getElementById('embed-anim-btn'),
                 accessionBadge: document.getElementById('accession-badge'),
                 fullscreenBtn: document.getElementById('fullscreen-btn'),
                 fullscreenViewer: document.getElementById('fullscreen-viewer'),
@@ -815,20 +801,6 @@
                     }
                 }
 
-                // Update embed floating mode switcher
-                if (DOM.embedStaticBtn && DOM.embedAnimBtn) {
-                    if (mode === 'anim') {
-                        DOM.embedAnimBtn.classList.add('text-[var(--archival-fg)]', 'font-semibold');
-                        DOM.embedAnimBtn.classList.remove('text-[var(--archival-meta)]');
-                        DOM.embedStaticBtn.classList.remove('text-[var(--archival-fg)]', 'font-semibold');
-                        DOM.embedStaticBtn.classList.add('text-[var(--archival-meta)]');
-                    } else {
-                        DOM.embedStaticBtn.classList.add('text-[var(--archival-fg)]', 'font-semibold');
-                        DOM.embedStaticBtn.classList.remove('text-[var(--archival-meta)]');
-                        DOM.embedAnimBtn.classList.remove('text-[var(--archival-fg)]', 'font-semibold');
-                        DOM.embedAnimBtn.classList.add('text-[var(--archival-meta)]');
-                    }
-                }
 
                 renderViewport();
             }
@@ -952,18 +924,7 @@
                 setRenderMode('anim');
             });
 
-            // Embed Mode Toggle: Static vs Anim
-            if (DOM.embedStaticBtn) {
-                DOM.embedStaticBtn.addEventListener('click', () => {
-                    setRenderMode('static');
-                });
-            }
 
-            if (DOM.embedAnimBtn) {
-                DOM.embedAnimBtn.addEventListener('click', () => {
-                    setRenderMode('anim');
-                });
-            }
 
             // Robust Clipboard Copy Helper with textarea fallback
             async function copyToClipboard(text) {
@@ -1212,19 +1173,79 @@
                 }
             });
 
-            // Fullscreen Viewer Modal
-            DOM.fullscreenBtn.addEventListener('click', () => {
+            // Fullscreen Viewer Functions (Parity with Geometry Vault)
+            const openFullscreenViewer = () => {
                 if (!STATE.currentSpecimen) return;
+                const svgElement = DOM.target.querySelector('svg');
+                if (!svgElement) return;
+
                 DOM.viewerTitle.textContent = `SPECIMEN PLATE // ${STATE.currentTaxon.toUpperCase()}`;
-                DOM.viewerSeq.textContent = `ACCESSION: ${STATE.currentSpecimen.accessionId} // PTR: ${STATE.currentSpecimen.metrics.hashHex}`;
-                
+                DOM.viewerSeq.textContent = `ACCESSION: ${STATE.currentSpecimen.accessionId} | PTR: ${STATE.currentSpecimen.metrics.hashHex}`;
+
+                const svgClone = svgElement.cloneNode(true);
+                svgClone.removeAttribute('width');
+                svgClone.removeAttribute('height');
+                svgClone.style.maxWidth = '100%';
+                svgClone.style.maxHeight = '100%';
+                svgClone.style.width = 'auto';
+                svgClone.style.height = 'auto';
+                svgClone.style.objectFit = 'contain';
+
+                DOM.viewerContent.innerHTML = '';
+                DOM.viewerContent.appendChild(svgClone);
+
+                DOM.fullscreenViewer.classList.add('active');
+                DOM.fullscreenViewer.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeFullscreenViewer = () => {
+                DOM.fullscreenViewer.classList.remove('active');
+                DOM.fullscreenViewer.classList.add('hidden');
+                document.body.style.overflow = '';
+            };
+
+            const handleViewerDownloadSVG = async () => {
+                try {
+                    const svgElement = DOM.viewerContent.querySelector('svg');
+                    if (!svgElement) return;
+                    const btn = DOM.viewerDownloadSvg;
+                    const origHtml = btn.innerHTML;
+
+                    const svgContent = svgElement.outerHTML;
+                    const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const isAnim = svgElement.querySelector('animate') !== null;
+                    const prefix = isAnim ? 'animated_' : 'specimen_';
+                    a.download = `${prefix}${STATE.currentSpecimen.accessionId}_${STATE.currentTaxon.replace(/\s+/g, '_')}.svg`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    await copyToClipboard(svgContent);
+                    buttonFeedback(btn, origHtml, '<i class="fa-solid fa-check"></i> [ SAVED ]');
+                } catch (err) {
+                    console.error('Viewer SVG export error:', err);
+                }
+            };
+
+            const handleViewerDownloadPNG = () => {
+                if (!STATE.currentSpecimen) return;
+                const btn = DOM.viewerDownloadPng;
+                const origHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> [ RENDERING ]';
+
                 const dims = getCanvasDimensions(STATE.currentRatio);
                 const theme = STATE.palette;
+                const scale = 2.5;
+                const canvasW = Math.round(dims.w * scale);
+                const canvasH = Math.round(dims.h * scale);
 
                 const svgMarkup = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
                     width: dims.w,
                     height: dims.h,
-                    bg: 'transparent',
+                    bg: theme.bg,
                     stroke: theme.stroke,
                     strokeWidth: 1.1,
                     margin: 12,
@@ -1236,26 +1257,62 @@
                     metrics: STATE.currentSpecimen.metrics
                 });
 
-                DOM.viewerContent.innerHTML = svgMarkup;
-                DOM.fullscreenViewer.classList.add('active');
-            });
+                const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const img = new Image();
 
-            DOM.viewerClose.addEventListener('click', () => {
-                DOM.fullscreenViewer.classList.remove('active');
-            });
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvasW;
+                    canvas.height = canvasH;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = theme.bg;
+                    ctx.fillRect(0, 0, canvasW, canvasH);
+                    ctx.drawImage(img, 0, 0, canvasW, canvasH);
+                    URL.revokeObjectURL(url);
 
-            DOM.viewerDownloadSvg.addEventListener('click', () => {
-                DOM.svgBtn.click();
-            });
+                    try {
+                        const imgData = ctx.getImageData(0, 0, canvasW, canvasH);
+                        const data = imgData.data;
+                        for (let i = 0; i < data.length; i += 4) {
+                            const noise = (Math.random() - 0.5) * 8;
+                            data[i] = Math.min(255, Math.max(0, data[i] + noise));
+                            data[i+1] = Math.min(255, Math.max(0, data[i+1] + noise));
+                            data[i+2] = Math.min(255, Math.max(0, data[i+2] + noise));
+                        }
+                        ctx.putImageData(imgData, 0, 0);
+                    } catch(err) {
+                        console.warn("Canvas noise filter bypassed:", err);
+                    }
 
-            DOM.viewerDownloadPng.addEventListener('click', () => {
-                DOM.pngBtn.click();
-            });
+                    const pngUrl = canvas.toDataURL('image/png');
+                    const a = document.createElement('a');
+                    a.download = `archival_plate_${STATE.currentSpecimen.accessionId}_${STATE.currentTaxon.replace(/\s+/g, '_')}.png`;
+                    a.href = pngUrl;
+                    a.click();
+
+                    buttonFeedback(btn, origHtml, '<i class="fa-solid fa-check"></i> [ PNG SAVED ]');
+                };
+                img.src = url;
+            };
+
+            // Fullscreen viewer event listeners
+            DOM.fullscreenBtn.addEventListener('click', openFullscreenViewer);
+            DOM.viewerClose.addEventListener('click', closeFullscreenViewer);
+            DOM.viewerDownloadSvg.addEventListener('click', handleViewerDownloadSVG);
+            DOM.viewerDownloadPng.addEventListener('click', handleViewerDownloadPNG);
 
             // Close modal on Escape
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && DOM.fullscreenViewer.classList.contains('active')) {
-                    DOM.fullscreenViewer.classList.remove('active');
+                    closeFullscreenViewer();
+                }
+            });
+
+            // Close modal when clicking outside modal window
+            DOM.fullscreenViewer.addEventListener('click', (e) => {
+                if (!e.target.closest('.max-w-7xl')) {
+                    closeFullscreenViewer();
                 }
             });
 
@@ -1349,7 +1406,9 @@
             // Register Service Worker
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js').catch(err => {
+                    navigator.serviceWorker.register('/sw.js').then(reg => {
+                        reg.update();
+                    }).catch(err => {
                         console.warn('SW registration warning:', err);
                     });
                 });

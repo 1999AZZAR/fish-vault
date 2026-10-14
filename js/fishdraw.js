@@ -811,21 +811,17 @@ function draw_svg(polylines, options = {}){
   // Print Accession ID & PTR Metadata directly on the plate (Matching Geometry Vault)
   let accessionId = options.accessionId || (options.metrics && options.metrics.accessionId) || (options.specimen && options.specimen.accessionId) || "";
   let hashHex = options.hashHex || (options.metrics && options.metrics.hashHex) || (options.specimen && options.specimen.metrics && options.specimen.metrics.hashHex) || "";
-  let taxon = options.taxon || (options.metrics && options.metrics.taxon) || (options.specimen && options.specimen.metrics && options.specimen.metrics.taxon) || "";
   let metaColor = options.metaColor || options.stroke || "#7A7068";
-  let metrics = options.metrics || (options.specimen && options.specimen.metrics) || null;
-  let sl = metrics && metrics.standardLength ? ` // SL:${metrics.standardLength}` : "";
-  let bd = metrics && metrics.bodyDepth ? ` // BD:${metrics.bodyDepth}` : "";
 
-  if (accessionId || hashHex || taxon) {
+  if (accessionId || hashHex) {
     let fontSize = Math.max(7.5, Math.min(10, Math.round(Math.min(width, height) * 0.018)));
     o += `  <g id="archival-plate-stamps" font-family="'JetBrains Mono', monospace" font-size="${fontSize}" letter-spacing="0.08em" fill="${metaColor}">\n`;
-    o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId || 'FV-ARCHIVAL'}${sl}${bd}</text>\n`;
+    if (accessionId) {
+      o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId}</text>\n`;
+    }
     if (hashHex) {
       o += `    <text x="${width - margin - 6}" y="${margin + 13}" text-anchor="end">PTR:${hashHex}</text>\n`;
     }
-    let headerLabel = taxon ? `ARCHIVAL PISCES // ${taxon.toUpperCase()}` : `ARCHIVAL PISCES // FIG. 01`;
-    o += `    <text x="${margin + 6}" y="${margin + 13}">${headerLabel}</text>\n`;
     o += `  </g>\n`;
   }
 
@@ -883,21 +879,17 @@ function draw_svg_anim(polylines, speed = 0.005, options = {}){
   // Print Accession ID & PTR Metadata on animated plate as well
   let accessionId = options.accessionId || (options.metrics && options.metrics.accessionId) || (options.specimen && options.specimen.accessionId) || "";
   let hashHex = options.hashHex || (options.metrics && options.metrics.hashHex) || (options.specimen && options.specimen.metrics && options.specimen.metrics.hashHex) || "";
-  let taxon = options.taxon || (options.metrics && options.metrics.taxon) || (options.specimen && options.specimen.metrics && options.specimen.metrics.taxon) || "";
   let metaColor = options.metaColor || options.stroke || "#7A7068";
-  let metrics = options.metrics || (options.specimen && options.specimen.metrics) || null;
-  let sl = metrics && metrics.standardLength ? ` // SL:${metrics.standardLength}` : "";
-  let bd = metrics && metrics.bodyDepth ? ` // BD:${metrics.bodyDepth}` : "";
 
-  if (accessionId || hashHex || taxon) {
+  if (accessionId || hashHex) {
     let fontSize = Math.max(7.5, Math.min(10, Math.round(Math.min(width, height) * 0.018)));
     o += `  <g id="archival-plate-stamps" font-family="'JetBrains Mono', monospace" font-size="${fontSize}" letter-spacing="0.08em" fill="${metaColor}">\n`;
-    o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId || 'FV-ARCHIVAL'}${sl}${bd}</text>\n`;
+    if (accessionId) {
+      o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId}</text>\n`;
+    }
     if (hashHex) {
       o += `    <text x="${width - margin - 6}" y="${margin + 13}" text-anchor="end">PTR:${hashHex}</text>\n`;
     }
-    let headerLabel = taxon ? `ARCHIVAL PISCES // ${taxon.toUpperCase()}` : `ARCHIVAL PISCES // FIG. 01`;
-    o += `    <text x="${margin + 6}" y="${margin + 13}">${headerLabel}</text>\n`;
     o += `  </g>\n`;
   }
 
