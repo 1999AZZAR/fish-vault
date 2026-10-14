@@ -1,27 +1,43 @@
 # Fish Vault: Archival Ichthyology & Specimen Vault
 
-> A digital synthesis engine and taxonomic archival repository designed for technical minimalism, structural honesty, and procedural biology. Built on the Swiss-Archival design system and powered by Lingdong Huang's procedural `fishdraw` algorithm.
+> A digital synthesis engine and taxonomic archival repository designed for technical minimalism, structural honesty, and procedural biology.
+
+[![Live Site](https://img.shields.io/badge/Live-fish--vault.glassgallery.my.id-8B1A1A?style=flat-square)](https://fish-vault.glassgallery.my.id)
+[![Architecture](https://img.shields.io/badge/Design_System-Swiss--Archival-2A2520?style=flat-square)](#architectural-principles)
+[![Engine](https://img.shields.io/badge/Engine-Lingdong_fishdraw-7A7068?style=flat-square)](https://github.com/LingDong-/fishdraw)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 ---
 
-## Architectural Principles
+## 🏛️ Lineage & Design Heritage
+
+**Fish Vault** is built directly upon the intersection of two open-source creative engineering projects:
+
+| Project | Author & Source | Contributions to Fish Vault |
+|---|---|---|
+| **[Geometry Vault](https://geometry-vault.glassgallery.my.id/)** | **Azzar Budiyanto**<br>([Portfolio](https://glassgallery.my.id/porto/)) | • **Swiss-Archival Design System**: Tactile 300gsm rag paper aesthetic, coordinate ticks, and accession numbering.<br>• **Interface Architecture**: Multi-ratio format matrix, hardware-accelerated cursor, and telemetry side-panel.<br>• **Embed Protocol**: Iframe embed mode (`?mode=embed`), URL state synchronization, and PostMessage API. |
+| **[fishdraw](https://github.com/LingDong-/fishdraw)** | **Lingdong Huang**<br>([Demo](https://fishdraw.glitch.me/)) | • **Procedural Anatomical Synthesis**: Algorithmic generation of body curvature, dorsal fins, caudal tails, spines, and meristic scales.<br>• **Taxonomic Generator**: Built-in pseudo-Latin binomial nomenclature generator (`binomen()`).<br>• **Plotter Mechanics**: Pure vector polyline coordinate synthesis and Hershey vector typography engraving. |
+
+---
+
+## 📐 Architectural Principles
 
 1. **Taxonomic Naturalism & Structural Honesty:** Visible field grids, technical metadata, and Linnaean binomial nomenclature as primary aesthetic and functional elements.
-2. **Technical Minimalism:** Zero-dependency vanilla engine (~75KB). Runs 100% client-side with zero build steps or heavyweight frameworks.
-3. **Physicality & Archival Media:** Simulates 300gsm matte rag paper, tactile noise textures, and antique field expedition plates (*HMS Challenger*, Linnaean Society monographs, and Victorian natural history plates).
+2. **Technical Minimalism:** Zero-dependency vanilla engine (~75KB). Runs 100% client-side with zero build steps or heavyweight dependencies.
+3. **Physicality & Archival Media:** Simulates 300gsm matte rag paper, tactile noise textures, and antique field expedition plates (*HMS Challenger*, Linnaean Society monographs, and Victorian biological taxonomy plates).
 4. **Plotter-Centric Precision:** Synthesizes pure vector polylines rather than raster approximations, ensuring infinite fidelity, SMIL live stroke animations, and direct compatibility with CNC pen plotters (AxiDraw).
 
 ---
 
-## Features
+## ✨ Features
 
 ### 1. Deterministic Biological Synthesis
-Transform narrative sequences, phrases, or names into reproducible morphological parameters. The engine calculates body curvature, spine density, scale morphology, dentition, and pseudo-Latin binomens (*e.g. Salmo salar*, *Chrosomus macrocephalus*). 
+Transform narrative sequences, phrases, or names into reproducible morphological parameters. The engine calculates body curvature, spine density, scale morphology, dentition, and pseudo-Latin binomens (*e.g. Salmo salar*, *Chrosomus macrocephalus*).
+> **Determinism Guarantee:** Features an engine patch ensuring the internal PRNG noise table resets cleanly between runs, guaranteeing that identical seeds yield identical specimens across prolonged web sessions.
 
-### 2. Live Pen Plotter Simulation
-Toggle between two rendering engines:
-- **Static Vector Plate:** Instantaneous rendering of clean SVG paths.
-- **Plotter Simulation:** Live animated SMIL pen plotter simulation illustrating each stroke being drawn across the plate in real-time.
+### 2. Dual Render Modes
+- **Static Vector Plate:** Instantaneous rendering of clean SVG vector strokes.
+- **Plotter Simulation:** Live animated SMIL pen plotter simulation illustrating each stroke being drawn across the plate in real-time, accompanied by a `[ RE-PLOT ]` button.
 
 ### 3. Morphometric Telemetry Dashboard
 Real-time extraction and inspection of procedural biological measurements:
@@ -33,7 +49,7 @@ Real-time extraction and inspection of procedural biological measurements:
 - **Strokes & Points:** Exact vector metrics count.
 
 ### 4. Archival Themes
-- **Linnaean Sepia:** Traditional bone black ink on 300gsm aged rag paper (`#E8E0D0`).
+- **Linnaean Sepia (Default):** Traditional bone black ink on 300gsm aged rag paper (`#E8E0D0`).
 - **Prussian Cyanotype:** Deep oceanic indigo and cyanotype blue on sun-bleached vellum.
 - **Challenger Deep:** Abyssal deep navy with bioluminescent amber markings.
 - **Drafting Vellum:** Technical architectural vellum with cobalt drafting ink.
@@ -56,78 +72,71 @@ Instantly adapt specimens across 9 standard publishing aspect ratios:
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Frontend:** HTML5, Vanilla JavaScript (ES6+), Tailwind CSS (Utility Layer).
 - **Core Engine:** Procedural polyline generation algorithm adapted from [fishdraw](https://github.com/LingDong-/fishdraw).
 - **Typography:** JetBrains Mono (Technical telemetry) & Plus Jakarta Sans (Editorial).
-- **Server / Deployment:** Alpine Nginx, Docker, Docker Compose.
+- **Deployment & Server:** Alpine Nginx, Docker, Cloudflare Tunnel (`cloudflared`).
 
 ---
 
-## Deployment & Local Execution
+## 🚀 Deployment & Local Execution
 
 ### Local Preview (No Docker required)
 Because the core engine is pure vanilla JavaScript, you can run it with any static file server:
 
 ```bash
 # Python 3
-python3 -m http.server 8085
+python3 -m http.server 8086
 
 # Node.js
-npx serve -l 8085
+npx serve -l 8086
 ```
 
-Navigate to `http://localhost:8085`.
+Navigate to `http://localhost:8086`.
 
 ### Docker Execution
 
 ```bash
-# Build & run with Docker
-docker build -t fish-vault .
-docker run -d -p 8085:80 --name fish-vault fish-vault
+# Build & run with Docker Compose
+docker compose up -d --build
 ```
 
-Or using Docker Compose:
-
-```bash
-docker compose up -d
-```
-
-The service will be accessible at `http://localhost:8086`.
+The service will be accessible locally at `http://localhost:8086`.
 
 ---
 
-## URL Parameters & External Integration
+## 🌐 Production URL & Integration
 
-Fish Vault supports deep-linking and state synchronization:
+**Live Production Domain:** [https://fish-vault.glassgallery.my.id](https://fish-vault.glassgallery.my.id)
 
-| Parameter | Type | Description |
-|---|---|---|
-| `seed` | String | Narrative sequence or species name (e.g. `?seed=Salmo%20salar`) |
-| `theme` | String | Palette theme: `linnaean`, `cyanotype`, `challenger`, `vellum` |
-| `w` & `h` | Number | Aspect ratio width and height (e.g. `?w=16&h=9`) |
-| `mode` | String | Set to `embed` for iframe portfolio embedding |
-| `mode_render` | String | Set to `anim` to default to live plotter simulation |
+### URL Query Parameters
+
+| Parameter | Type | Description | Example |
+|---|---|---|---|
+| `seed` | String | Narrative sequence or species name | `?seed=Salmo%20salar` |
+| `theme` | String | Palette theme (`linnaean`, `cyanotype`, `challenger`, `vellum`) | `?theme=cyanotype` |
+| `w` & `h` | Number | Aspect ratio width and height | `?w=16&h=9` |
+| `mode` | String | Set to `embed` for iframe portfolio embedding | `?mode=embed` |
+| `mode_render` | String | Set to `anim` to default to live plotter simulation | `?mode_render=anim` |
 
 ### Iframe Embed Example
 
 ```html
 <iframe 
-  src="https://fish-vault.glassgallery.my.id/?seed=Chrosomus%20nebulosus&theme=cyanotype&w=16&h=9&mode=embed" 
+  src="https://fish-vault.glassgallery.my.id/?seed=Salmo%20salar&theme=linnaean&w=16&h=9&mode=embed" 
   width="100%" 
   height="450" 
   frameborder="0" 
-  style="border:1px solid #DDD5C5; background:#223244;" 
+  style="border:1px solid #DDD5C5; background:#EFE9DC;" 
   allowtransparency="true">
 </iframe>
 ```
 
----
+### PostMessage Interface
 
-## PostMessage Interface
-
-Parent applications can control embedded Fish Vault iframes programmatically:
+Parent windows can interact with embedded Fish Vault iframes programmatically:
 
 ```javascript
 const iframe = document.querySelector('iframe');
@@ -147,8 +156,15 @@ iframe.contentWindow.postMessage({
 
 ---
 
-## Credits & Citations
+## 📜 Credits & Citations
 
-- **Lead Architect & Concept:** [Azzar Budiyanto](https://glassgallery.my.id/porto/)
-- **Original Procedural Algorithm:** [Lingdong Huang (fishdraw)](https://github.com/LingDong-/fishdraw)
-- **License:** MIT License
+1. **[Geometry Vault](https://geometry-vault.glassgallery.my.id/)** by **[Azzar Budiyanto](https://glassgallery.my.id/porto/)**
+   - For the Swiss-Archival UI design system, telemetry dashboard, embed architecture, and tactile paper styling.
+2. **[fishdraw](https://github.com/LingDong-/fishdraw)** by **[Lingdong Huang](https://lingdong.works/)**
+   - For the procedural fish drawing mathematics, Bézier anatomical modeling, and pseudo-Latin binomen nomenclature generator.
+
+---
+
+## 📄 License
+
+This project is open-source under the [MIT License](LICENSE).
