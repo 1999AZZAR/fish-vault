@@ -407,9 +407,14 @@
                         <i class="fa-solid fa-fish text-xs text-[var(--archival-accent)]"></i>
                         <span>FISH VAULT // ARCHIVAL ENGINE</span>
                     </h1>
-                    <span class="font-tech text-[9px] px-2 py-0.5 bg-[var(--archival-bg)] border border-[var(--archival-muted)] text-[var(--archival-meta)] font-semibold">
-                        V1.0-SYNTH
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <a href="/docs.html" class="font-tech text-[9px] text-[var(--archival-meta)] hover:text-[var(--archival-accent)] transition-colors flex items-center gap-1 px-2 py-0.5 border border-[var(--archival-muted)] rounded-sm bg-[var(--archival-bg)]">
+                            <i class="fa-solid fa-book-open text-[8px]"></i> [ DOCS ]
+                        </a>
+                        <span class="font-tech text-[9px] px-2 py-0.5 bg-[var(--archival-bg)] border border-[var(--archival-muted)] text-[var(--archival-meta)] font-semibold">
+                            V1.0
+                        </span>
+                    </div>
                 </header>
 
                 <!-- 1. Aspect Ratio Matrix -->
@@ -545,53 +550,45 @@
         </section>
 
         <!-- Bottom: Archival Knowledge & Field Guide Section -->
-        <section class="md:col-span-5 surface-card p-6 sm:p-8 rounded-sm space-y-6 mt-4">
-            <header class="border-b border-[var(--archival-muted)] pb-3 flex justify-between items-center">
-                <h2 class="font-tech text-xs font-bold text-[var(--archival-accent)] flex items-center gap-2">
-                    <i class="fa-solid fa-book-bookmark text-xs"></i>
-                    <span>FIELD MONOGRAPH // ICHTHYOLOGICAL PROCEDURAL SYNTHESIS</span>
-                </h2>
-                <span class="font-tech text-[9px] text-[var(--archival-meta)]">SYSTEM: SWISS-ARCHIVAL PISCES</span>
-            </header>
+        <section class="md:col-span-5 surface-card p-8 rounded-sm space-y-8 mt-6">
+            <div class="prose max-w-none">
+                <h2 class="font-tech text-sm font-semibold border-b border-[var(--archival-muted)] pb-2 text-[var(--archival-accent)]">01. ARCHIVAL_SYNTHESIS_OVERVIEW</h2>
+                <p class="text-sm text-[var(--archival-fg)] leading-relaxed mt-3">
+                    The Fish Vault Specimen Vault is a digital synthesis engine and taxonomic archival repository designed for technical minimalism and structural honesty. It facilitates the procedural generation, visualization, and preservation of biological specimens based on narrative input sequences, bridging historical natural history monographs with brutalist digital archiving.
+                </p>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-[var(--archival-fg)] leading-relaxed">
-                <div class="space-y-2">
-                    <h3 class="font-tech text-[10px] font-semibold text-[var(--archival-fg)] border-b border-[var(--archival-muted)] pb-1">
-                        01. TAXONOMIC SYNTHESIS
-                    </h3>
-                    <p class="text-[var(--archival-meta)]">
-                        Fish Vault transforms narrative sequences into anatomical parameters via cryptographic PRNG hashing. Each seed deterministically defines body curvature, spine density, meristic scale patterns, and a pseudo-Latin binomen generated using historical Linnaean morphemes.
-                    </p>
-                </div>
+                <h2 class="font-tech text-sm font-semibold border-b border-[var(--archival-muted)] pb-2 text-[var(--archival-accent)] mt-8">02. PROCEDURAL_ICHTHYOLOGY_LOGIC</h2>
+                <p class="text-sm text-[var(--archival-fg)] leading-relaxed mt-3">
+                    By injecting narrative sequences or species names into the matrix, the engine deterministically hashes the input to compute anatomical spline curves, meristic scale classifications, fin ray distributions, and pseudo-Latin binomens. Each specimen constitutes an authentic archival record, traceable via its accession identifier (ACCESSION-ID) and 32-bit hash metric.
+                </p>
 
-                <div class="space-y-2">
-                    <h3 class="font-tech text-[10px] font-semibold text-[var(--archival-fg)] border-b border-[var(--archival-muted)] pb-1">
-                        02. PLOTTER-CENTRIC GEOMETRY
-                    </h3>
-                    <p class="text-[var(--archival-meta)]">
-                        Unlike raster generators, all specimens are synthesized as ordered polyline vector strokes. This ensures zero fidelity loss at any resolution and direct compatibility with CNC pen plotters (e.g. AxiDraw), laser cutters, and vector archival repositories.
-                    </p>
-                </div>
+                <h2 class="font-tech text-sm font-semibold border-b border-[var(--archival-muted)] pb-2 text-[var(--archival-accent)] mt-8">03. ARCHIVAL_EXPORT_PROTOCOL</h2>
+                <p class="text-sm text-[var(--archival-fg)] leading-relaxed mt-3">
+                    Specimens can be exported as clean vector SVG plates, live SMIL animated drawing vectors, 300DPI canvas PNGs with organic rag paper grain, or raw polyline CSV coordinate streams for AxiDraw pen plotters. Adhering to the Swiss-Archival design system, the visual architecture mimics 300gsm matte-printed archival media.
+                </p>
 
-                <div class="space-y-2">
-                    <h3 class="font-tech text-[10px] font-semibold text-[var(--archival-fg)] border-b border-[var(--archival-muted)] pb-1">
-                        03. EMBED & ARCHIVAL PRESERVATION
-                    </h3>
-                    <p class="text-[var(--archival-meta)]">
-                        Specimens can be permanently embedded into digital publications or field journals using the <code>?mode=embed</code> URL parameter. URL state syncing ensures full reproducibility and deep-linking across research environments.
-                    </p>
-                </div>
-            </div>
+                <h2 class="font-tech text-sm font-semibold border-b border-[var(--archival-muted)] pb-2 text-[var(--archival-accent)] mt-8">04. EMBED_INTEGRATION_PROTOCOL</h2>
+                <p class="text-sm text-[var(--archival-fg)] leading-relaxed mt-3">
+                    Fish Vault functions as a standalone embeddable service. Utilizing the <code>?mode=embed</code> URL parameter, the interface strips ornamental controls and renders a clean archival plate suitable for iframe embedding in research publications, field journals, or digital portfolios. External parent applications can control the synthesis engine in real-time via the <code>postMessage</code> API.
+                </p>
 
-            <div class="border-t border-[var(--archival-muted)] pt-4 flex flex-col sm:flex-row justify-between items-center text-[9px] font-tech text-[var(--archival-meta)] gap-2">
-                <div>
-                    CURATED BY <a href="https://glassgallery.my.id/porto/" target="_blank" class="text-[var(--archival-accent)] hover:underline font-semibold">AZZAR BUDIYANTO</a> // ALGORITHM BY <a href="https://github.com/LingDong-/fishdraw" target="_blank" class="hover:underline">LINGDONG HUANG</a>
-                </div>
-                <div>
-                    ZERO-DEPENDENCY VANILLA ENGINE // DETERMINISTIC REPRODUCIBILITY 100%
+                <h2 class="font-tech text-sm font-semibold border-b border-[var(--archival-muted)] pb-2 text-[var(--archival-accent)] mt-8">05. PROGRAMMATIC_ARCHIVAL_ACCESS</h2>
+                <p class="text-sm text-[var(--archival-fg)] leading-relaxed mt-3">
+                    The vault provides complete client-side and server-side JavaScript SDK access via <code>window.FishDraw</code> and Node.js. Developers can synthesize specimens, extract morphometric telemetry (Standard Length, Body Depth, Curvature, Scale and Fin Classifications), and generate plotter vectors without external dependencies.
+                </p>
+
+                <div class="mt-8 pt-4 border-t border-[var(--archival-muted)] flex items-center justify-between">
+                    <a href="/docs.html" class="font-tech text-[10px] text-[var(--archival-meta)] hover:text-[var(--archival-accent)] transition-colors flex items-center gap-2 font-semibold">
+                        <i class="fa-solid fa-file-code"></i> READ_FULL_DOCUMENTATION_PROTOCOL
+                    </a>
+                    <span class="font-tech text-[9px] text-[var(--archival-meta)]">FIELD_MONOGRAPH // REV 1.0</span>
                 </div>
             </div>
         </section>
+        
+        <footer class="md:col-span-5 text-center py-12">
+            <p class="font-tech text-[10px] text-[var(--archival-meta)]">FISH_VAULT &copy; 2026 | AZZAR_BUDIYANTO // ALGORITHM BY LINGDONG_HUANG</p>
+        </footer>
 
     </main>
 

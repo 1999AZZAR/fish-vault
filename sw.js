@@ -7,6 +7,7 @@ const ASSETS = [
   '/icon-512.svg',
   '/icon-maskable.svg',
   '/js/fishdraw.js',
+  '/docs.html',
   'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdn.tailwindcss.com'
