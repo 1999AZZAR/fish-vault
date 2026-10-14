@@ -125,29 +125,39 @@ The service will be accessible locally at `http://localhost:8086`.
 
 ```html
 <iframe 
-  src="https://fish-vault.glassgallery.my.id/?seed=Salmo%20salar&theme=linnaean&w=16&h=9&mode=embed" 
-  width="100%" 
-  height="450" 
+  src="https://fish-vault.glassgallery.my.id/?mode=embed&seed=Salmo%20salar&theme=linnaean&w=3&h=2" 
+  width="500" 
+  height="500" 
   frameborder="0" 
-  style="border:1px solid #DDD5C5; background:#EFE9DC;" 
-  allowtransparency="true">
+  style="border:1px solid #DDD5C5; border-radius:4px;">
 </iframe>
 ```
 
-### PostMessage Interface
+### PostMessage Protocol (Geometry Vault Parity)
 
-Parent windows can interact with embedded Fish Vault iframes programmatically:
+Parent windows can interact with embedded Fish Vault iframes programmatically without reloading:
 
 ```javascript
 const iframe = document.querySelector('iframe');
 
-// Set a new species seed
+// Method 1: Full Specimen Update
+iframe.contentWindow.postMessage({
+  type: 'UPDATE_SPECIMEN', // or 'SET_SPECIMEN'
+  data: {
+    seed: 'Thunnus alalunga',
+    theme: 'challenger',
+    w: 1,
+    h: 1,
+    mode_render: 'static' // or 'anim'
+  }
+}, '*');
+
+// Method 2: Granular controls
 iframe.contentWindow.postMessage({
   type: 'SET_SEED',
   data: { seed: 'Thunnus alalunga' }
 }, '*');
 
-// Change archival palette theme
 iframe.contentWindow.postMessage({
   type: 'SET_THEME',
   data: { theme: 'challenger' }

@@ -248,17 +248,32 @@
 
         /* Embed Mode */
         body[data-mode="embed"] { 
-            background: transparent !important;
+            background-color: var(--archival-surface, #EFE9DC) !important;
             padding: 0 !important; 
             margin: 0 !important;
+            display: block !important;
             overflow: hidden !important;
+            width: 100vw !important;
+            height: 100vh !important;
         }
-        body[data-mode="embed"] .noise-layer,
+        body[data-mode="embed"] .noise-layer {
+            display: block !important;
+            opacity: 0.05 !important;
+            pointer-events: none !important;
+        }
+        body[data-mode="embed"] * {
+            cursor: auto !important;
+        }
+        body[data-mode="embed"] .custom-cursor,
+        body[data-mode="embed"] .custom-cursor-trail,
         body[data-mode="embed"] #fullscreen-viewer,
         body[data-mode="embed"] #fullscreen-btn,
-        body[data-mode="embed"] section,
+        body[data-mode="embed"] header,
         body[data-mode="embed"] footer,
-        body[data-mode="embed"] header {
+        body[data-mode="embed"] section,
+        body[data-mode="embed"] .crop-mark,
+        body[data-mode="embed"] .viewport-header,
+        body[data-mode="embed"] .viewport-footer {
             display: none !important;
         }
         body[data-mode="embed"] main { 
@@ -268,15 +283,43 @@
             margin: 0 !important; 
             padding: 0 !important;
             display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             grid-template-columns: none !important;
+            gap: 0 !important;
+            space-y: 0 !important;
         }
         body[data-mode="embed"] .specimen-container {
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        body[data-mode="embed"] #render-target {
             width: 100% !important;
             height: 100% !important;
-            padding: 0 !important;
+            margin: 0 !important;
+            padding: 16px !important;
+            min-height: 0 !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        body[data-mode="embed"] #render-target svg {
+            max-width: 96% !important;
+            max-height: 96% !important;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain !important;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         /* Registration Mark styling */
@@ -295,6 +338,13 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-start p-4 sm:p-8" data-theme="linnaean">
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('mode') === 'embed') { document.body.dataset.mode = 'embed'; }
+            if (params.get('theme')) { document.body.dataset.theme = params.get('theme'); }
+        })();
+    </script>
 
     <!-- Tactile Cursor -->
     <div class="custom-cursor" aria-hidden="true"></div>
@@ -347,7 +397,7 @@
             <div class="crop-mark crop-br"></div>
 
             <!-- Viewport Top Controls -->
-            <div class="flex items-center justify-between w-full z-20 pb-2 border-b border-[var(--archival-muted)]">
+            <div class="viewport-header flex items-center justify-between w-full z-20 pb-2 border-b border-[var(--archival-muted)]">
                 <div class="flex items-center gap-3">
                     <span class="font-tech text-[10px] text-[var(--archival-meta)] flex items-center gap-1.5">
                         <i class="fa-solid fa-compass-drafting text-[var(--archival-accent)]"></i>
@@ -381,7 +431,7 @@
             </div>
 
             <!-- Viewport Bottom Calibration Bar -->
-            <div class="flex items-center justify-between w-full pt-2 border-t border-[var(--archival-muted)] z-20 text-[9px] font-tech text-[var(--archival-meta)]">
+            <div class="viewport-footer flex items-center justify-between w-full pt-2 border-t border-[var(--archival-muted)] z-20 text-[9px] font-tech text-[var(--archival-meta)]">
                 <div class="flex items-center gap-2">
                     <span>GRID: 10MM</span>
                     <span>•</span>
@@ -657,36 +707,41 @@
 
             // Custom Hardware-Accelerated Cursor Logic
             if (DOM.cursor && DOM.cursorTrail) {
-                let mouseX = -100, mouseY = -100;
-                let trailX = -100, trailY = -100;
+                if (!window.matchMedia('(pointer: fine)').matches || document.body.dataset.mode === 'embed') {
+                    DOM.cursor.style.display = 'none';
+                    DOM.cursorTrail.style.display = 'none';
+                } else {
+                    let mouseX = -100, mouseY = -100;
+                    let trailX = -100, trailY = -100;
 
-                window.addEventListener('mousemove', (e) => {
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
-                    DOM.cursor.style.setProperty('--x', `${mouseX}px`);
-                    DOM.cursor.style.setProperty('--y', `${mouseY}px`);
-                });
+                    window.addEventListener('mousemove', (e) => {
+                        mouseX = e.clientX;
+                        mouseY = e.clientY;
+                        DOM.cursor.style.setProperty('--x', `${mouseX}px`);
+                        DOM.cursor.style.setProperty('--y', `${mouseY}px`);
+                    });
 
-                function renderCursorTrail() {
-                    trailX += (mouseX - trailX) * 0.25;
-                    trailY += (mouseY - trailY) * 0.25;
-                    DOM.cursorTrail.style.setProperty('--x', `${trailX}px`);
-                    DOM.cursorTrail.style.setProperty('--y', `${trailY}px`);
+                    function renderCursorTrail() {
+                        trailX += (mouseX - trailX) * 0.25;
+                        trailY += (mouseY - trailY) * 0.25;
+                        DOM.cursorTrail.style.setProperty('--x', `${trailX}px`);
+                        DOM.cursorTrail.style.setProperty('--y', `${trailY}px`);
+                        requestAnimationFrame(renderCursorTrail);
+                    }
                     requestAnimationFrame(renderCursorTrail);
-                }
-                requestAnimationFrame(renderCursorTrail);
 
-                const interactiveEls = document.querySelectorAll('button, input, select, a');
-                interactiveEls.forEach(el => {
-                    el.addEventListener('mouseenter', () => {
-                        DOM.cursor.classList.add('hover');
-                        DOM.cursorTrail.classList.add('hover');
+                    const interactiveEls = document.querySelectorAll('button, input, select, a');
+                    interactiveEls.forEach(el => {
+                        el.addEventListener('mouseenter', () => {
+                            DOM.cursor.classList.add('hover');
+                            DOM.cursorTrail.classList.add('hover');
+                        });
+                        el.addEventListener('mouseleave', () => {
+                            DOM.cursor.classList.remove('hover');
+                            DOM.cursorTrail.classList.remove('hover');
+                        });
                     });
-                    el.addEventListener('mouseleave', () => {
-                        DOM.cursor.classList.remove('hover');
-                        DOM.cursorTrail.classList.remove('hover');
-                    });
-                });
+                }
             }
 
             // Calculate Target Canvas Dimensions based on Aspect Ratio
@@ -801,7 +856,11 @@
                 DOM.target.innerHTML = svgMarkup;
                 const svgEl = DOM.target.querySelector('svg');
                 if (svgEl) {
-                    svgEl.classList.add('w-full', 'h-full', 'max-h-[500px]', 'object-contain', 'transition-all');
+                    if (document.body.dataset.mode === 'embed') {
+                        svgEl.classList.add('w-full', 'h-full', 'max-w-full', 'max-h-full', 'object-contain');
+                    } else {
+                        svgEl.classList.add('w-full', 'h-full', 'max-h-[500px]', 'object-contain', 'transition-all');
+                    }
                 }
             }
 
@@ -1050,14 +1109,15 @@
                 buttonFeedback(DOM.plotterBtn, DOM.plotterBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ CSV EXPORTED ]');
             });
 
-            // Export 5: Embed Protocol Modal / Copy
+            // Export 5: Embed Protocol Modal / Copy (Parity with Geometry Vault)
             DOM.embedBtn.addEventListener('click', async () => {
-                const embedUrl = `${window.location.origin}${window.location.pathname}?seed=${encodeURIComponent(STATE.currentSeed)}&theme=${STATE.currentTheme}&w=${STATE.currentRatio.w}&h=${STATE.currentRatio.h}&mode=embed`;
-                const iframeCode = `<iframe src="${embedUrl}" width="100%" height="450" frameborder="0" style="border:1px solid #DDD5C5;background:#EFE9DC;" allowtransparency="true"></iframe>`;
+                const seedParam = STATE.currentSeed ? `&seed=${encodeURIComponent(STATE.currentSeed)}` : "";
+                const embedUrl = `${window.location.origin}${window.location.pathname}?mode=embed${seedParam}&theme=${STATE.currentTheme}&w=${STATE.currentRatio.w}&h=${STATE.currentRatio.h}`;
+                const iframeCode = `<iframe src="${embedUrl}" width="500" height="500" frameborder="0" style="border:1px solid #DDD5C5; border-radius:4px;"></iframe>`;
 
                 try {
                     await navigator.clipboard.writeText(iframeCode);
-                    buttonFeedback(DOM.embedBtn, DOM.embedBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ EMBED CODE COPIED ]');
+                    buttonFeedback(DOM.embedBtn, DOM.embedBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ EMBED_CODE_COPIED ]');
                 } catch(e) {
                     prompt("Archival Embed Iframe Snippet:", iframeCode);
                 }
@@ -1109,18 +1169,47 @@
                 }
             });
 
-            // PostMessage external control protocol
+            // PostMessage external control protocol (Parity with Geometry Vault)
             window.addEventListener('message', (e) => {
                 if (!e.data || typeof e.data !== 'object') return;
                 const { type, data } = e.data;
-                if (type === 'SET_SEED' && data.seed) {
+                if (type === 'UPDATE_SPECIMEN' || type === 'SET_SPECIMEN') {
+                    if (data.seed) {
+                        DOM.seedInput.value = data.seed;
+                        DOM.idLoadInput.value = '';
+                    } else if (data.id) {
+                        DOM.idLoadInput.value = data.id;
+                        DOM.seedInput.value = data.id;
+                    }
+                    if (data.theme && STATE.paletteConfig[data.theme]) {
+                        STATE.currentTheme = data.theme;
+                        DOM.themeSelect.value = data.theme;
+                        document.body.dataset.theme = data.theme;
+                    }
+                    if (data.w && data.h) {
+                        DOM.ratioBtns.forEach(btn => {
+                            if (btn.dataset.w == data.w && btn.dataset.h == data.h) {
+                                DOM.ratioBtns.forEach(b => b.removeAttribute('data-active'));
+                                btn.setAttribute('data-active', 'true');
+                                STATE.currentRatio = { w: parseFloat(data.w), h: parseFloat(data.h) };
+                            }
+                        });
+                    }
+                    if (data.mode_render) {
+                        STATE.renderMode = data.mode_render;
+                    }
+                    synthesizeSpecimen();
+                } else if (type === 'SET_SEED' && data.seed) {
                     DOM.seedInput.value = data.seed;
+                    DOM.idLoadInput.value = '';
                     synthesizeSpecimen();
                 } else if (type === 'SET_THEME' && data.theme) {
-                    STATE.currentTheme = data.theme;
-                    DOM.themeSelect.value = data.theme;
-                    document.body.dataset.theme = data.theme;
-                    renderViewport();
+                    if (STATE.paletteConfig[data.theme]) {
+                        STATE.currentTheme = data.theme;
+                        DOM.themeSelect.value = data.theme;
+                        document.body.dataset.theme = data.theme;
+                        renderViewport();
+                    }
                 }
             });
 
@@ -1133,6 +1222,9 @@
 
                 if (params.get('seed')) {
                     DOM.seedInput.value = params.get('seed');
+                } else if (params.get('id')) {
+                    DOM.seedInput.value = params.get('id');
+                    DOM.idLoadInput.value = params.get('id');
                 }
 
                 if (params.get('theme')) {
