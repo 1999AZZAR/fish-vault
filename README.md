@@ -94,7 +94,7 @@ Or using Docker Compose:
 docker compose up -d
 ```
 
-The service will be accessible at `http://localhost:8085`.
+The service will be accessible at `http://localhost:8086`.
 
 ---
 

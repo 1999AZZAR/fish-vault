@@ -6,6 +6,6 @@ services:
     container_name: fish-vault
     restart: unless-stopped
     ports:
-      - "8085:80"
+      - "8086:80"
     environment:
       - NODE_ENV=production
