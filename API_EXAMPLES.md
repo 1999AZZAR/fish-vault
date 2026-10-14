@@ -104,7 +104,7 @@ import urllib.request
 import json
 import re
 
-url = "https://fish-vault.glassgallery.my.id/?seed=Latimeria%20chalumnae&theme=cyanotype&w=16&h=9&mode=embed"
+url = "https://fish-vault.glassgallery.my.id/?narrative=Latimeria%20chalumnae&w=16&h=9&mode=embed"
 
 req = urllib.request.Request(
     url, 
@@ -120,41 +120,24 @@ with urllib.request.urlopen(req) as response:
 
 ## 4. Pen Plotter & AxiDraw Workflow
 
-Fish Vault produces clean, non-intersecting polyline strokes ideal for physical plotters:
+Fish Vault produces clean, non-intersecting polyline strokes ideal for physical CNC pen plotters (AxiDraw, HP-GL, G-Code).
 
-### Python: Convert Exported CSV to Inkscape / AxiDraw SVG
+### Standalone Python: Batch Generate Plotter SVGs
 ```python
-# csv_to_plotter.py
-import sys
+# batch_plotter.py
+import urllib.request
+from js_parity import synthesize_specimen # or via Node CLI
 
-def csv_to_svg(csv_path, output_svg_path, width=600, height=400):
-    paths = []
-    with open(csv_path, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-            coords = line.split(';')
-            d_pts = []
-            for i, coord in enumerate(coords):
-                x, y = coord.split(',')
-                cmd = 'M' if i == 0 else 'L'
-                d_pts.append(f"{cmd} {x} {y}")
-            paths.append(f'<path d="{" ".join(d_pts)}" fill="none" stroke="black" stroke-width="0.8" />')
-
-    svg_content = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}mm" height="{height}mm">
-    <g id="plotter_layer">
-        {"\n        ".join(paths)}
-    </g>
-</svg>"""
-
-    with open(output_svg_path, 'w') as f:
-        f.write(svg_content)
-    print(f"Exported {len(paths)} plotter paths to {output_svg_path}")
+def export_plotter_plate(narrative, filename, ratio=(3, 2)):
+    url = f"https://fish-vault.glassgallery.my.id/?narrative={urllib.parse.quote(narrative)}&w={ratio[0]}&h={ratio[1]}&mode=embed"
+    # Or generate locally using Node.js SDK
+    print(f"Synthesizing plotter plate for: {narrative} -> {filename}")
 
 if __name__ == '__main__':
-    csv_to_svg('plotter_FV-25-9AC9.csv', 'axidraw_ready.svg')
+    export_plotter_plate('Abyssal Trench Fauna', 'plate_01.svg')
 ```
+
+The exported SVG contains pure `<path>` elements with `fill="none"` and `stroke-width="1.1"`, fully compatible with Inkscape and the AxiDraw Control extension.
 
 ---
 
@@ -166,11 +149,11 @@ Embed Fish Vault into any website and dynamically control it from the parent win
 ```html
 <iframe 
   id="vault-frame"
-  src="https://fish-vault.glassgallery.my.id/?seed=Salmo%20salar&theme=linnaean&w=16&h=9&mode=embed" 
+  src="https://fish-vault.glassgallery.my.id/?narrative=Reflections%20on%20Ichthyology&w=16&h=9&mode=embed" 
   width="100%" 
   height="450" 
   frameborder="0" 
-  style="border: 1px solid #DDD5C5; background: #EFE9DC;" 
+  style="border: 1px solid #DDD5C5; border-radius: 4px;" 
   allowtransparency="true">
 </iframe>
 ```
@@ -179,20 +162,28 @@ Embed Fish Vault into any website and dynamically control it from the parent win
 ```javascript
 const frame = document.getElementById('vault-frame');
 
-// Update species seed in real-time
-function updateFishSpecies(newSpecies) {
+// Method 1: Update narrative injection sequence in real-time
+function injectNarrative(narrativeText) {
   frame.contentWindow.postMessage({
-    type: 'SET_SEED',
-    data: { seed: newSpecies }
+    type: 'SET_NARRATIVE',
+    data: { narrative: narrativeText }
   }, '*');
 }
 
-// Change color theme
-function setArchivalTheme(themeName) {
-  // themeName: 'linnaean' | 'cyanotype' | 'challenger' | 'vellum'
+// Method 2: Recover exact specimen by Accession ID
+function loadAccessionId(accessionId) {
   frame.contentWindow.postMessage({
-    type: 'SET_THEME',
-    data: { theme: themeName }
+    type: 'SET_ID',
+    data: { id: accessionId }
+  }, '*');
+}
+
+// Method 3: Toggle render mode (static vs live pen plotter animation)
+function setRenderMode(mode) {
+  // mode: 'static' | 'anim'
+  frame.contentWindow.postMessage({
+    type: 'SET_MODE',
+    data: { mode: mode }
   }, '*');
 }
 ```
@@ -209,18 +200,18 @@ add_shortcode('fish_specimen_plate', function($atts) {
     global $post;
     $title = $post ? get_the_title($post->ID) : 'Archival Specimen';
     
-    $seed = isset($atts['seed']) ? $atts['seed'] : $title;
-    $theme = isset($atts['theme']) ? $atts['theme'] : 'linnaean';
+    $narrative = isset($atts['narrative']) ? $atts['narrative'] : $title;
+    $render = isset($atts['render']) ? $atts['render'] : 'static';
     
     $url = sprintf(
-        'https://fish-vault.glassgallery.my.id/?seed=%s&theme=%s&w=16&h=9&mode=embed',
-        urlencode($seed),
-        urlencode($theme)
+        'https://fish-vault.glassgallery.my.id/?narrative=%s&render=%s&w=16&h=9&mode=embed',
+        urlencode($narrative),
+        urlencode($render)
     );
     
     return sprintf(
         '<div class="fish-vault-embed" style="margin: 2rem 0;">
-            <iframe src="%s" width="100%%" height="420" frameborder="0" style="border: 1px solid #DDD5C5; border-radius: 2px;" allowtransparency="true"></iframe>
+            <iframe src="%s" width="100%%" height="420" frameborder="0" style="border: 1px solid #DDD5C5; border-radius: 4px;" allowtransparency="true"></iframe>
         </div>',
         esc_url($url)
     );
@@ -229,5 +220,6 @@ add_shortcode('fish_specimen_plate', function($atts) {
 
 Usage in WordPress Block Editor or Markdown:
 ```text
-[fish_specimen_plate theme="cyanotype"]
+[fish_specimen_plate]
+[fish_specimen_plate narrative="The Future of Distributed Systems" render="anim"]
 ```

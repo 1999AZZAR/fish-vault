@@ -4,7 +4,7 @@ Get the Fish Vault procedural specimen engine up and running locally or in Docke
 
 ---
 
-## ⚡ 1-Minute Local Preview (No Docker Required)
+## 1-Minute Local Preview (No Docker Required)
 
 Because Fish Vault is built with technical minimalism and zero dependencies, you can run it instantly using any static web server:
 
@@ -20,7 +20,7 @@ Open `http://localhost:8086` in your browser.
 
 ---
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 ### 1. Using Docker Compose (Recommended)
 
@@ -54,7 +54,7 @@ Server: nginx/...
 
 ---
 
-## 💻 Quick Code Test (Node.js)
+## Quick Code Test (Node.js)
 
 Verify the procedural engine determinism and polyline generation directly from the terminal:
 
@@ -70,7 +70,7 @@ console.log("Strokes count:", spec.polylines.length);
 
 ---
 
-## 🌐 Public Cloudflare Access
+## Public Cloudflare Access
 
 If routed through Cloudflare Tunnel as configured:
 - **Production URL:** [https://fish-vault.glassgallery.my.id](https://fish-vault.glassgallery.my.id)

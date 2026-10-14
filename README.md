@@ -9,7 +9,7 @@
 
 ---
 
-## 🏛️ Lineage & Design Heritage
+## Lineage & Design Heritage
 
 **Fish Vault** is built directly upon the intersection of two open-source creative engineering projects:
 
@@ -20,7 +20,7 @@
 
 ---
 
-## 📐 Architectural Principles
+## Architectural Principles
 
 1. **Taxonomic Naturalism & Structural Honesty:** Visible field grids, technical metadata, and Linnaean binomial nomenclature as primary aesthetic and functional elements.
 2. **Technical Minimalism:** Zero-dependency vanilla engine (~75KB). Runs 100% client-side with zero build steps or heavyweight dependencies.
@@ -29,7 +29,7 @@
 
 ---
 
-## ✨ Features
+## Features
 
 ### 1. Deterministic Narrative Injection Pipeline
 Transform arbitrary narrative sequences (blog titles, essay prompts, article excerpts, or ideas) into reproducible biological specimens:
@@ -72,7 +72,7 @@ Instantly adapt specimens across 9 standard publishing aspect ratios:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend:** HTML5, Vanilla JavaScript (ES6+), Tailwind CSS (Utility Layer).
 - **Core Engine:** Procedural polyline generation algorithm adapted from [fishdraw](https://github.com/LingDong-/fishdraw).
@@ -81,7 +81,7 @@ Instantly adapt specimens across 9 standard publishing aspect ratios:
 
 ---
 
-## 🚀 Deployment & Local Execution
+## Deployment & Local Execution
 
 ### Local Preview (No Docker required)
 Because the core engine is pure vanilla JavaScript, you can run it with any static file server:
@@ -107,7 +107,7 @@ The service will be accessible locally at `http://localhost:8086`.
 
 ---
 
-## 🌐 Production URL & Integration
+## Production URL & Integration
 
 **Live Production Domain:** [https://fish-vault.glassgallery.my.id](https://fish-vault.glassgallery.my.id)
 
@@ -169,7 +169,7 @@ iframe.contentWindow.postMessage({
 
 ---
 
-## 📜 Credits & Citations
+## Credits & Citations
 
 1. **[Geometry Vault](https://geometry-vault.glassgallery.my.id/)** by **[Azzar Budiyanto](https://glassgallery.my.id/porto/)**
    - For the Swiss-Archival UI design system, telemetry dashboard, embed architecture, and tactile paper styling.
@@ -178,6 +178,6 @@ iframe.contentWindow.postMessage({
 
 ---
 
-## 📄 License
+## License
 
 This project is open-source under the [MIT License](LICENSE).

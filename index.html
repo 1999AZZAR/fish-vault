@@ -228,7 +228,7 @@
         }
         body[data-mode="embed"] .noise-layer {
             display: block !important;
-            opacity: 0.05 !important;
+            opacity: 0.04 !important;
             pointer-events: none !important;
         }
         body[data-mode="embed"] * {
@@ -238,9 +238,12 @@
         body[data-mode="embed"] .custom-cursor-trail,
         body[data-mode="embed"] #fullscreen-viewer,
         body[data-mode="embed"] #fullscreen-btn,
+        body[data-mode="embed"] #embed-modal,
         body[data-mode="embed"] header,
         body[data-mode="embed"] footer,
-        body[data-mode="embed"] section {
+        body[data-mode="embed"] section,
+        body[data-mode="embed"] .drafting-dots,
+        body[data-mode="embed"] main > *:not(#specimen-viewport-card) {
             display: none !important;
         }
         body[data-mode="embed"] main { 
@@ -249,31 +252,35 @@
             height: 100vh !important; 
             margin: 0 !important; 
             padding: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
+            display: block !important;
             grid-template-columns: none !important;
             gap: 0 !important;
             space-y: 0 !important;
+            overflow: hidden !important;
         }
-        body[data-mode="embed"] .surface-card {
+        body[data-mode="embed"] #specimen-viewport-card {
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
             width: 100vw !important;
             height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
             padding: 0 !important;
             margin: 0 !important;
             border-radius: 0 !important;
+            aspect-ratio: auto !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            position: relative !important;
+            overflow: hidden !important;
         }
         body[data-mode="embed"] #render-target {
             width: 100% !important;
             height: 100% !important;
             margin: 0 !important;
-            padding: 16px !important;
+            padding: 8px !important;
             min-height: 0 !important;
             box-sizing: border-box !important;
             display: flex !important;
@@ -281,15 +288,18 @@
             justify-content: center !important;
         }
         body[data-mode="embed"] #render-target svg {
-            max-width: 96% !important;
-            max-height: 96% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
             width: 100% !important;
             height: 100% !important;
             object-fit: contain !important;
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
         body[data-mode="embed"] #embed-mode-switcher {
             display: flex !important;
+            position: absolute !important;
+            bottom: 8px !important;
+            right: 8px !important;
+            z-index: 40 !important;
         }
     </style>
 </head>
@@ -339,14 +349,37 @@
         </div>
     </div>
 
+    <!-- Embed Code Modal -->
+    <div id="embed-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-8 bg-[#0B1120]/80 backdrop-blur-xs">
+        <div class="surface-card max-w-lg w-full p-6 space-y-4 rounded-sm border border-[var(--archival-muted)] bg-[var(--archival-bg)] shadow-lg relative">
+            <div class="flex justify-between items-center border-b border-[var(--archival-muted)] pb-2">
+                <h3 class="font-tech text-xs font-semibold text-[var(--archival-fg)] flex items-center gap-2">
+                    <i class="fa-solid fa-share-nodes text-[var(--archival-accent)]"></i> EMBED_INTEGRATION_PROTOCOL
+                </h3>
+                <button id="embed-modal-close" class="font-tech text-[10px] text-[var(--archival-meta)] hover:text-[var(--archival-accent)] cursor-pointer">
+                    [ CLOSE ]
+                </button>
+            </div>
+            <p class="font-tech text-[10px] text-[var(--archival-meta)] leading-relaxed">
+                Copy the HTML iframe integration snippet below into your web publication or CMS plate:
+            </p>
+            <textarea id="embed-modal-textarea" readonly class="w-full h-24 p-2 text-xs font-mono bg-[var(--archival-surface)] border border-[var(--archival-muted)] rounded-xs resize-none select-all text-[var(--archival-fg)]"></textarea>
+            <div class="flex justify-end gap-2 pt-2 border-t border-[var(--archival-muted)]">
+                <button id="embed-modal-copy-btn" class="font-tech text-[10px] px-3 py-1.5 bg-[var(--archival-surface)] border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] font-semibold transition-all cursor-pointer">
+                    <i class="fa-solid fa-copy text-[9px]"></i> [ COPY_SNIPPET ]
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Workspace -->
     <main class="max-w-[82rem] w-full space-y-6 relative z-10 grid grid-cols-1 md:grid-cols-5 gap-6">
         
         <!-- Left: Specimen Plate Viewport (Col 1-3) - Geometry Vault Structure -->
-        <div class="surface-card w-full aspect-square md:aspect-auto md:h-full md:col-span-3 rounded-sm p-8 overflow-hidden relative group">
+        <div id="specimen-viewport-card" class="surface-card w-full aspect-square md:aspect-auto md:h-full md:col-span-3 rounded-sm p-8 overflow-hidden relative group">
             
             <!-- Subtle Drafting Dot Matrix -->
-            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTIyLCAxMTIsIDEwNCwgMC4xKSIvPjwvc3ZnPg==')] opacity-80 pointer-events-none"></div>
+            <div class="drafting-dots absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTIyLCAxMTIsIDEwNCwgMC4xKSIvPjwvc3ZnPg==')] opacity-80 pointer-events-none"></div>
 
             <button id="fullscreen-btn" class="absolute top-4 right-4 font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] flex items-center justify-center gap-2 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-surface)] z-10 transition-all">
                 <i class="fa-solid fa-expand"></i> [ EXPAND ]
@@ -619,6 +652,10 @@
                 animSvgBtn: document.getElementById('anim-svg-btn'),
                 pngBtn: document.getElementById('png-btn'),
                 embedBtn: document.getElementById('embed-btn'),
+                embedModal: document.getElementById('embed-modal'),
+                embedModalTextarea: document.getElementById('embed-modal-textarea'),
+                embedModalClose: document.getElementById('embed-modal-close'),
+                embedModalCopyBtn: document.getElementById('embed-modal-copy-btn'),
                 // Telemetry
                 telTaxon: document.getElementById('tel-taxon'),
                 telLength: document.getElementById('tel-length'),
@@ -691,20 +728,30 @@
 
             // Synthesize Specimen using FishDraw Engine
             function synthesizeSpecimen() {
-                const inputVal = DOM.seedInput.value.trim() || 'Reflections on Archival Ichthyology';
-                STATE.currentNarrative = inputVal;
-                STATE.currentSeed = inputVal;
-
+                const idLoadVal = DOM.idLoadInput.value.trim();
+                let inputVal = DOM.seedInput.value.trim();
                 const dims = getCanvasDimensions(STATE.currentRatio);
 
-                // Call enhanced FishDraw engine with narrative injection support
-                const specimen = window.FishDraw.generateSpecimen({
-                    narrative: inputVal,
+                let specimenOpts = {
                     width: dims.w,
                     height: dims.h,
                     pad: Math.max(20, Math.round(Math.min(dims.w, dims.h) * 0.06)),
                     includeLabel: true
-                });
+                };
+
+                if (idLoadVal && idLoadVal.includes('-')) {
+                    specimenOpts.id = idLoadVal;
+                    STATE.currentNarrative = idLoadVal;
+                    STATE.currentSeed = idLoadVal;
+                } else {
+                    inputVal = inputVal || 'Reflections on Archival Ichthyology';
+                    specimenOpts.narrative = inputVal;
+                    STATE.currentNarrative = inputVal;
+                    STATE.currentSeed = inputVal;
+                }
+
+                // Call enhanced FishDraw engine with narrative injection support
+                const specimen = window.FishDraw.generateSpecimen(specimenOpts);
 
                 STATE.currentSpecimen = specimen;
                 STATE.currentTaxon = specimen.taxon;
@@ -728,8 +775,15 @@
                 // Sync URL if not in embed mode
                 if (document.body.dataset.mode !== 'embed') {
                     const url = new URL(window.location);
-                    url.searchParams.set('narrative', inputVal);
-                    url.searchParams.delete('seed');
+                    if (idLoadVal && idLoadVal.includes('-')) {
+                        url.searchParams.set('id', idLoadVal);
+                        url.searchParams.delete('narrative');
+                        url.searchParams.delete('seed');
+                    } else {
+                        url.searchParams.set('narrative', inputVal);
+                        url.searchParams.delete('seed');
+                        url.searchParams.delete('id');
+                    }
                     url.searchParams.set('w', STATE.currentRatio.w);
                     url.searchParams.set('h', STATE.currentRatio.h);
                     if (STATE.renderMode !== 'static') {
@@ -819,6 +873,7 @@
                 DOM.target.innerHTML = svgMarkup;
                 const svgEl = DOM.target.querySelector('svg');
                 if (svgEl) {
+                    svgEl.style.aspectRatio = `${dims.w} / ${dims.h}`;
                     if (document.body.dataset.mode === 'embed') {
                         svgEl.classList.add('w-full', 'h-full', 'max-w-full', 'max-h-full', 'object-contain');
                     } else {
@@ -910,6 +965,62 @@
                 });
             }
 
+            // Robust Clipboard Copy Helper with textarea fallback
+            async function copyToClipboard(text) {
+                if (navigator.clipboard && window.isSecureContext) {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        return true;
+                    } catch (e) {
+                        // fallback to execCommand below
+                    }
+                }
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    ta.style.top = '-9999px';
+                    ta.setAttribute('readonly', '');
+                    document.body.appendChild(ta);
+                    ta.select();
+                    const success = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    if (success) return true;
+                } catch (e) {}
+                return false;
+            }
+
+            function showEmbedModal(code) {
+                if (!DOM.embedModal) return;
+                DOM.embedModalTextarea.value = code;
+                DOM.embedModal.classList.remove('hidden');
+                DOM.embedModal.classList.add('flex');
+                DOM.embedModalTextarea.focus();
+                DOM.embedModalTextarea.select();
+            }
+
+            function hideEmbedModal() {
+                if (!DOM.embedModal) return;
+                DOM.embedModal.classList.add('hidden');
+                DOM.embedModal.classList.remove('flex');
+            }
+
+            if (DOM.embedModalClose) {
+                DOM.embedModalClose.addEventListener('click', hideEmbedModal);
+            }
+            if (DOM.embedModal) {
+                DOM.embedModal.addEventListener('click', (e) => {
+                    if (e.target === DOM.embedModal) hideEmbedModal();
+                });
+            }
+            if (DOM.embedModalCopyBtn) {
+                DOM.embedModalCopyBtn.addEventListener('click', async () => {
+                    await copyToClipboard(DOM.embedModalTextarea.value);
+                    buttonFeedback(DOM.embedModalCopyBtn, DOM.embedModalCopyBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ COPIED ]');
+                });
+            }
+
             // Button Feedback Utility
             function buttonFeedback(buttonDom, originalHtml, successHtml) {
                 buttonDom.innerHTML = successHtml;
@@ -950,11 +1061,11 @@
                 a.click();
                 URL.revokeObjectURL(url);
 
-                // Copy to clipboard
-                try {
-                    await navigator.clipboard.writeText(svgContent);
+                // Copy to clipboard with fallback
+                const copied = await copyToClipboard(svgContent);
+                if (copied) {
                     buttonFeedback(DOM.svgBtn, DOM.svgBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ SVG SAVED ]');
-                } catch(e) {
+                } else {
                     buttonFeedback(DOM.svgBtn, DOM.svgBtn.innerHTML, '<i class="fa-solid fa-download"></i> [ DOWNLOADED ]');
                 }
             });
@@ -1066,19 +1177,38 @@
                 img.src = url;
             });
 
-            // Export 4: Embed Protocol Modal / Copy (Parity with Geometry Vault)
+            // Export 4: Embed Protocol Generation (Parity with Geometry Vault)
             DOM.embedBtn.addEventListener('click', async () => {
                 const baseUrl = `${window.location.origin}${window.location.pathname}`;
-                const narrativeParam = STATE.currentNarrative ? `&narrative=${encodeURIComponent(STATE.currentNarrative)}` : "";
-                const renderParam = STATE.renderMode === 'anim' ? "&render=anim" : "";
-                const embedUrl = `${baseUrl}?mode=embed${narrativeParam}&w=${STATE.currentRatio.w}&h=${STATE.currentRatio.h}${renderParam}`;
-                const iframeCode = `<iframe src="${embedUrl}" width="600" height="400" frameborder="0" style="border:1px solid #DDD5C5; border-radius:4px;" title="Archival Pisces // ${STATE.currentTaxon || 'Specimen'}"></iframe>`;
+                const ratio = STATE.currentRatio;
+                const dims = getCanvasDimensions(ratio);
 
-                try {
-                    await navigator.clipboard.writeText(iframeCode);
+                const idVal = DOM.idLoadInput.value.trim();
+                const seedVal = DOM.seedInput.value.trim();
+
+                let query = `?mode=embed`;
+                if (idVal && idVal.includes('-')) {
+                    query += `&id=${encodeURIComponent(idVal)}`;
+                } else if (seedVal) {
+                    query += `&narrative=${encodeURIComponent(seedVal)}`;
+                } else if (STATE.currentNarrative) {
+                    query += `&narrative=${encodeURIComponent(STATE.currentNarrative)}`;
+                }
+
+                query += `&w=${ratio.w}&h=${ratio.h}`;
+                if (STATE.renderMode === 'anim') {
+                    query += `&render=anim`;
+                }
+
+                const embedUrl = `${baseUrl}${query}`;
+                const iframeCode = `<iframe src="${embedUrl}" width="${dims.w}" height="${dims.h}" frameborder="0" style="border:1px solid #DDD5C5; border-radius:4px;" title="Fish Vault // ${STATE.currentTaxon || 'Pisces'}"></iframe>`;
+
+                console.warn('[FishVault] Embed code generated:', iframeCode);
+                const copied = await copyToClipboard(iframeCode);
+                if (copied) {
                     buttonFeedback(DOM.embedBtn, DOM.embedBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ EMBED_CODE_COPIED ]');
-                } catch(e) {
-                    prompt("Archival Embed Iframe Snippet:", iframeCode);
+                } else {
+                    showEmbedModal(iframeCode);
                 }
             });
 
@@ -1181,13 +1311,15 @@
                     document.body.dataset.mode = 'embed';
                 }
 
-                if (params.get('narrative')) {
+                if (params.get('id')) {
+                    DOM.idLoadInput.value = params.get('id');
+                    DOM.seedInput.value = '';
+                } else if (params.get('narrative')) {
                     DOM.seedInput.value = params.get('narrative');
+                    DOM.idLoadInput.value = '';
                 } else if (params.get('seed')) {
                     DOM.seedInput.value = params.get('seed');
-                } else if (params.get('id')) {
-                    DOM.seedInput.value = params.get('id');
-                    DOM.idLoadInput.value = params.get('id');
+                    DOM.idLoadInput.value = '';
                 }
 
                 if (params.get('w') && params.get('h')) {
