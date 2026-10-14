@@ -173,7 +173,7 @@
                 <div class="bg-[#E8E0D0] p-4 border border-[#DDD5C5] space-y-3">
                     <p class="font-tech text-[10px] text-[#2A2520] font-bold">IFRAME_SNIPPET</p>
                     <pre class="bg-white/60 border-none m-0"><code>&lt;iframe 
-  src="https://fish-vault.glassgallery.my.id/?mode=embed&seed=Salmo%20salar&theme=linnaean&w=3&h=2" 
+  src="https://fish-vault.glassgallery.my.id/?mode=embed&seed=Salmo%20salar&w=3&h=2" 
   width="500" 
   height="500" 
   frameborder="0" 
@@ -185,10 +185,12 @@
                     <ul class="list-disc pl-5 space-y-1 text-[#2A2520]">
                         <li><code>mode</code>: Set to <code>embed</code> to strip UI chrome and render pure archival plate.</li>
                         <li><code>seed</code> / <code>id</code>: Narrative string, species name, or accession ID.</li>
-                        <li><code>theme</code>: Palette preset (<code>linnaean</code>, <code>cyanotype</code>, <code>challenger</code>, <code>vellum</code>).</li>
                         <li><code>w</code> &amp; <code>h</code>: Aspect ratio dimension ratio (e.g., <code>?w=3&amp;h=2</code>).</li>
-                        <li><code>mode_render</code>: Set to <code>anim</code> for live pen plotter simulation or <code>static</code> for vector plate.</li>
+                        <li><code>mode_render</code>: <code>static</code> (default) or <code>anim</code> (live pen plotter simulation).</li>
                     </ul>
+                    <p class="text-[11px] text-[#7A7068] pt-1">
+                        <strong>Interactive Mode Selector:</strong> On the embed itself, an interactive micro-badge in the bottom-right corner allows viewers to switch between <code>STATIC</code> and <code>ANIM</code> playback dynamically.
+                    </p>
                 </div>
             </section>
 
@@ -205,7 +207,6 @@ vaultIframe.contentWindow.postMessage({
   type: 'UPDATE_SPECIMEN', // or 'SET_SPECIMEN'
   data: {
     seed: 'Latimeria chalumnae',
-    theme: 'cyanotype',
     w: 1,
     h: 1,
     mode_render: 'static' // or 'anim'
@@ -219,24 +220,22 @@ vaultIframe.contentWindow.postMessage({
 }, '*');
 
 vaultIframe.contentWindow.postMessage({
-  type: 'SET_THEME',
-  data: { theme: 'challenger' }
+  type: 'SET_MODE',
+  data: { mode: 'anim' } // or 'static'
 }, '*');</code></pre>
             </section>
 
-            <!-- Section 05: Plotter Integration -->
+            <!-- Section 05: Vector Synthesis & SMIL Animation -->
             <section id="plotter-integration" class="surface-card p-8 rounded-sm space-y-4">
-                <h2 class="font-tech text-sm font-semibold border-b border-[#DDD5C5] pb-2 text-[#8B1A1A]">05. PLOTTER_INTEGRATION (AXIDRAW / CNC / G-CODE)</h2>
+                <h2 class="font-tech text-sm font-semibold border-b border-[#DDD5C5] pb-2 text-[#8B1A1A]">05. VECTOR_SYNTHESIS_&_SMIL_ANIMATION</h2>
                 <p class="text-sm text-[#2A2520] leading-relaxed">
-                    Unlike bitmap graphics, all Fish Vault outputs are natively generated as continuous vector polylines. Clicking <code>[ PLOTTER CSV ]</code> exports raw ordered coordinates:
+                    All Fish Vault outputs are natively generated as continuous vector polylines. Users can export clean standalone SVG plates or animated SMIL vector plates:
                 </p>
-                <pre><code># Format: Each line represents a continuous pen-down stroke
-# Coordinates: x1,y1;x2,y2;x3,y3...
-124.50,45.20;126.10,48.00;129.40,51.80
-180.00,82.10;185.30,83.40;192.10,84.90</code></pre>
-                <p class="text-xs text-[#7A7068]">
-                    This coordinate format can be imported into Inkscape (AxiDraw extension), converted to G-code via Python, or fed into laser engravers and physical vector plotters.
-                </p>
+                <ul class="list-disc pl-5 space-y-1 text-xs text-[#2A2520]">
+                    <li><strong>Clean Vector Plate [ SVG ]:</strong> Pure SVG paths wrapped in an archival border with accession ID and 32-bit hash stamps.</li>
+                    <li><strong>Animated Plotter [ ANIM SVG ]:</strong> Self-contained SMIL animated SVG that simulates physical pen plotter drawing in any web browser without external JavaScript dependencies.</li>
+                    <li><strong>High-Resolution Raster [ PNG 300DPI ]:</strong> Matte-rendered canvas export featuring authentic 300gsm paper grain noise.</li>
+                </ul>
             </section>
 
             <!-- Section 06: ID Reconstruction -->
@@ -263,8 +262,8 @@ vaultIframe.contentWindow.postMessage({
                 <pre class="text-xs"><code>// WordPress functions.php: Generate custom specimen plate embed for articles
 function get_fish_vault_specimen_embed($post_title) {
     $encoded_title = urlencode($post_title);
-    $url = "https://fish-vault.glassgallery.my.id/?seed={$encoded_title}&theme=linnaean&w=16&h=9&mode=embed";
-    return '&lt;iframe src="' . esc_url($url) . '" width="100%" height="450" frameborder="0" style="border:1px solid #DDD5C5; background:#EFE9DC;"&gt;&lt;/iframe&gt;';
+    $url = "https://fish-vault.glassgallery.my.id/?mode=embed&seed={$encoded_title}&w=3&h=2";
+    return '&lt;iframe src="' . esc_url($url) . '" width="500" height="500" frameborder="0" style="border:1px solid #DDD5C5; border-radius:4px;"&gt;&lt;/iframe&gt;';
 }</code></pre>
             </section>
 

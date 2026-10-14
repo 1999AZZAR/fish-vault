@@ -94,36 +94,6 @@
             --grid-color: rgba(191, 182, 166, 0.25);
         }
 
-        body[data-theme="cyanotype"] {
-            --archival-bg: #1A2634;
-            --archival-fg: #E6EEF8;
-            --archival-surface: #223244;
-            --archival-accent: #60A5FA;
-            --archival-muted: #334960;
-            --archival-meta: #94A3B8;
-            --grid-color: rgba(96, 165, 250, 0.12);
-        }
-
-        body[data-theme="challenger"] {
-            --archival-bg: #0B1120;
-            --archival-fg: #F1F5F9;
-            --archival-surface: #131E32;
-            --archival-accent: #F59E0B;
-            --archival-muted: #1E293B;
-            --archival-meta: #94A3B8;
-            --grid-color: rgba(245, 158, 11, 0.1);
-        }
-
-        body[data-theme="vellum"] {
-            --archival-bg: #F4F4F5;
-            --archival-fg: #18181B;
-            --archival-surface: #FFFFFF;
-            --archival-accent: #2563EB;
-            --archival-muted: #E4E4E7;
-            --archival-meta: #71717A;
-            --grid-color: rgba(37, 99, 235, 0.1);
-        }
-
         ::selection { background: var(--archival-accent); color: var(--archival-surface); }
 
         body { 
@@ -270,10 +240,7 @@
         body[data-mode="embed"] #fullscreen-btn,
         body[data-mode="embed"] header,
         body[data-mode="embed"] footer,
-        body[data-mode="embed"] section,
-        body[data-mode="embed"] .crop-mark,
-        body[data-mode="embed"] .viewport-header,
-        body[data-mode="embed"] .viewport-footer {
+        body[data-mode="embed"] section {
             display: none !important;
         }
         body[data-mode="embed"] main { 
@@ -289,7 +256,7 @@
             gap: 0 !important;
             space-y: 0 !important;
         }
-        body[data-mode="embed"] .specimen-container {
+        body[data-mode="embed"] .surface-card {
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
@@ -321,28 +288,16 @@
             object-fit: contain !important;
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
-
-        /* Registration Mark styling */
-        .crop-mark {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-color: var(--archival-meta);
-            opacity: 0.6;
-            pointer-events: none;
+        body[data-mode="embed"] #embed-mode-switcher {
+            display: flex !important;
         }
-        .crop-tl { top: 12px; left: 12px; border-top: 1.5px solid; border-left: 1.5px solid; }
-        .crop-tr { top: 12px; right: 12px; border-top: 1.5px solid; border-right: 1.5px solid; }
-        .crop-bl { bottom: 12px; left: 12px; border-bottom: 1.5px solid; border-left: 1.5px solid; }
-        .crop-br { bottom: 12px; right: 12px; border-bottom: 1.5px solid; border-right: 1.5px solid; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-start p-4 sm:p-8" data-theme="linnaean">
+<body class="min-h-screen flex flex-col items-center justify-start p-4 sm:p-8">
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
             if (params.get('mode') === 'embed') { document.body.dataset.mode = 'embed'; }
-            if (params.get('theme')) { document.body.dataset.theme = params.get('theme'); }
         })();
     </script>
 
@@ -387,63 +342,29 @@
     <!-- Main Workspace -->
     <main class="max-w-[82rem] w-full space-y-6 relative z-10 grid grid-cols-1 md:grid-cols-5 gap-6">
         
-        <!-- Left: Specimen Plate Viewport (Col 1-3) -->
-        <div class="specimen-container surface-card w-full aspect-square md:aspect-auto md:h-full md:col-span-3 rounded-sm p-6 sm:p-8 overflow-hidden relative group flex flex-col justify-between">
+        <!-- Left: Specimen Plate Viewport (Col 1-3) - Geometry Vault Structure -->
+        <div class="surface-card w-full aspect-square md:aspect-auto md:h-full md:col-span-3 rounded-sm p-8 overflow-hidden relative group">
             
-            <!-- Archival Corner Registration Marks -->
-            <div class="crop-mark crop-tl"></div>
-            <div class="crop-mark crop-tr"></div>
-            <div class="crop-mark crop-bl"></div>
-            <div class="crop-mark crop-br"></div>
+            <!-- Subtle Drafting Dot Matrix -->
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMTIyLCAxMTIsIDEwNCwgMC4xKSIvPjwvc3ZnPg==')] opacity-80 pointer-events-none"></div>
 
-            <!-- Viewport Top Controls -->
-            <div class="viewport-header flex items-center justify-between w-full z-20 pb-2 border-b border-[var(--archival-muted)]">
-                <div class="flex items-center gap-3">
-                    <span class="font-tech text-[10px] text-[var(--archival-meta)] flex items-center gap-1.5">
-                        <i class="fa-solid fa-compass-drafting text-[var(--archival-accent)]"></i>
-                        <span>PLATE // ARCHIVAL SYNTHESIS</span>
-                    </span>
-                    <span id="canvas-dim-badge" class="font-tech text-[9px] px-1.5 py-0.5 border border-[var(--archival-muted)] text-[var(--archival-meta)]">600×400</span>
-                </div>
-                
-                <div class="flex items-center gap-2">
-                    <!-- Mode Toggle: Static vs Plotter Simulation -->
-                    <div class="flex border border-[var(--archival-muted)] p-0.5 rounded-sm bg-[var(--archival-bg)]">
-                        <button id="mode-static-btn" class="font-tech text-[9px] px-2.5 py-1 text-[var(--archival-fg)] bg-[var(--archival-surface)] font-semibold transition-all">
-                            STATIC
-                        </button>
-                        <button id="mode-anim-btn" class="font-tech text-[9px] px-2.5 py-1 text-[var(--archival-meta)] hover:text-[var(--archival-fg)] transition-all">
-                            <i class="fa-solid fa-pen-nib mr-1"></i>PLOTTER
-                        </button>
-                    </div>
-
-                    <button id="fullscreen-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] flex items-center gap-1.5 px-2.5 py-1.5 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-surface)]">
-                        <i class="fa-solid fa-expand text-[9px]"></i>
-                    </button>
-                </div>
-            </div>
+            <button id="fullscreen-btn" class="absolute top-4 right-4 font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] flex items-center justify-center gap-2 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-surface)] z-10 transition-all">
+                <i class="fa-solid fa-expand"></i> [ EXPAND ]
+            </button>
 
             <!-- Specimen Vector Display Target -->
-            <div id="render-target" class="w-full flex-1 flex items-center justify-center my-4 overflow-hidden relative min-h-[320px]">
+            <div id="render-target" class="w-full h-full flex items-center justify-center">
                 <div class="font-tech text-[10px] text-[var(--archival-meta)] flex items-center gap-2">
                     <i class="fa-solid fa-circle-notch fa-spin text-[var(--archival-accent)]"></i> SYNTHESIZING SPECIMEN...
                 </div>
             </div>
 
-            <!-- Viewport Bottom Calibration Bar -->
-            <div class="viewport-footer flex items-center justify-between w-full pt-2 border-t border-[var(--archival-muted)] z-20 text-[9px] font-tech text-[var(--archival-meta)]">
-                <div class="flex items-center gap-2">
-                    <span>GRID: 10MM</span>
-                    <span>•</span>
-                    <span id="plot-speed-indicator" class="hidden">PLOT: 1.0X</span>
-                    <span id="stroke-metric-line">STROKES: 0 // PTS: 0</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="replay-draw-btn" class="hidden font-tech text-[9px] text-[var(--archival-accent)] hover:underline flex items-center gap-1">
-                        <i class="fa-solid fa-rotate-right"></i> RE-PLOT
-                    </button>
-                    <span class="tracking-widest">FIG. 01 — DORSAL & LATERAL FACIES</span>
-                </div>
+            <!-- Embed Minimal Mode Switcher (visible in embed mode, defaults to static) -->
+            <div id="embed-mode-switcher" class="hidden absolute bottom-3 right-3 z-30 font-tech text-[9px] items-center border border-[var(--archival-muted)] rounded-sm bg-[var(--archival-surface)]/90 backdrop-blur-xs shadow-xs p-0.5 opacity-80 hover:opacity-100 transition-opacity">
+                <button id="embed-static-btn" class="px-2 py-0.5 text-[var(--archival-fg)] font-semibold rounded-xs transition-colors">STATIC</button>
+                <button id="embed-anim-btn" class="px-2 py-0.5 text-[var(--archival-meta)] hover:text-[var(--archival-fg)] rounded-xs transition-colors flex items-center gap-1">
+                    <i class="fa-solid fa-play text-[7px]"></i> ANIM
+                </button>
             </div>
         </div>
 
@@ -504,10 +425,10 @@
                     </div>
                 </div>
 
-                <!-- 3. Accession ID Recovery & Theme Preset Selector -->
+                <!-- 3. Accession ID Recovery & Synthesis Mode -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div class="space-y-1.5">
-                        <label class="font-tech text-[8px] text-[var(--archival-meta)]">RECOVER FROM ID</label>
+                        <label class="font-tech text-[8px] text-[var(--archival-meta)] font-semibold">RECOVER FROM ID</label>
                         <div class="relative group">
                             <i class="fa-solid fa-fingerprint absolute left-3 top-1/2 -translate-y-1/2 text-[var(--archival-meta)] text-[10px]"></i>
                             <input type="text" id="id-load-input" placeholder="e.g. FV-25-9AC9" 
@@ -517,13 +438,15 @@
                     </div>
 
                     <div class="space-y-1.5">
-                        <label class="font-tech text-[8px] text-[var(--archival-meta)]">ARCHIVAL THEME</label>
-                        <select id="theme-select" class="w-full py-2 px-3 text-[10px] font-mono bg-[var(--archival-bg)] border border-[var(--archival-muted)] text-[var(--archival-fg)] rounded-sm focus:border-[var(--archival-accent)] outline-none">
-                            <option value="linnaean">Linnaean Sepia (Bone/Rag)</option>
-                            <option value="cyanotype">Prussian Cyanotype</option>
-                            <option value="challenger">Challenger Deep Abyssal</option>
-                            <option value="vellum">Drafting Vellum & Blue</option>
-                        </select>
+                        <label class="font-tech text-[8px] text-[var(--archival-meta)] font-semibold">SYNTHESIS_MODE</label>
+                        <div class="grid grid-cols-2 gap-1 p-0.5 border border-[var(--archival-muted)] rounded-sm bg-[var(--archival-bg)] h-[34px] items-center">
+                            <button id="mode-static-btn" class="h-full font-tech text-[9px] px-2 text-[var(--archival-fg)] bg-[var(--archival-surface)] font-semibold transition-all rounded-xs">
+                                STATIC
+                            </button>
+                            <button id="mode-anim-btn" class="h-full font-tech text-[9px] px-2 text-[var(--archival-meta)] hover:text-[var(--archival-fg)] transition-all rounded-xs flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-pen-nib text-[8px]"></i> PLOTTER
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -573,22 +496,16 @@
             </div>
 
             <!-- Export & Action Protocols Footer -->
-            <footer class="space-y-2.5 pt-4 border-t border-[var(--archival-muted)]">
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="svg-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
+            <footer class="space-y-2 pt-4 border-t border-[var(--archival-muted)]">
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="svg-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-2.5 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
                         <i class="fa-solid fa-code text-[9px]"></i> [ SVG ]
                     </button>
-                    <button id="anim-svg-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
+                    <button id="anim-svg-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-2.5 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
                         <i class="fa-solid fa-film text-[9px]"></i> [ ANIM SVG ]
                     </button>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="png-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
+                    <button id="png-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-2.5 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
                         <i class="fa-solid fa-download text-[9px]"></i> [ PNG 300DPI ]
-                    </button>
-                    <button id="plotter-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
-                        <i class="fa-solid fa-bezier-curve text-[9px]"></i> [ PLOTTER CSV ]
                     </button>
                 </div>
 
@@ -614,12 +531,12 @@
 
                 <h2 class="font-tech text-sm font-semibold border-b border-[var(--archival-muted)] pb-2 text-[var(--archival-accent)] mt-8">03. ARCHIVAL_EXPORT_PROTOCOL</h2>
                 <p class="text-sm text-[var(--archival-fg)] leading-relaxed mt-3">
-                    Specimens can be exported as clean vector SVG plates, live SMIL animated drawing vectors, 300DPI canvas PNGs with organic rag paper grain, or raw polyline CSV coordinate streams for AxiDraw pen plotters. Adhering to the Swiss-Archival design system, the visual architecture mimics 300gsm matte-printed archival media.
+                    Specimens can be exported as clean vector SVG plates, live SMIL animated drawing vectors, or 300DPI canvas PNGs with organic rag paper grain. Adhering to the Swiss-Archival design system, the visual architecture mimics 300gsm matte-printed archival media.
                 </p>
 
                 <h2 class="font-tech text-sm font-semibold border-b border-[var(--archival-muted)] pb-2 text-[var(--archival-accent)] mt-8">04. EMBED_INTEGRATION_PROTOCOL</h2>
                 <p class="text-sm text-[var(--archival-fg)] leading-relaxed mt-3">
-                    Fish Vault functions as a standalone embeddable service. Utilizing the <code>?mode=embed</code> URL parameter, the interface strips ornamental controls and renders a clean archival plate suitable for iframe embedding in research publications, field journals, or digital portfolios. External parent applications can control the synthesis engine in real-time via the <code>postMessage</code> API.
+                    Fish Vault functions as a standalone embeddable service. Utilizing the <code>?mode=embed</code> URL parameter, the interface strips ornamental controls and renders a clean archival plate suitable for iframe embedding, with interactive static/animated mode selection on the embed itself. External parent applications can control the synthesis engine in real-time via the <code>postMessage</code> API.
                 </p>
 
                 <h2 class="font-tech text-sm font-semibold border-b border-[var(--archival-muted)] pb-2 text-[var(--archival-accent)] mt-8">05. PROGRAMMATIC_ARCHIVAL_ACCESS</h2>
@@ -651,14 +568,13 @@
                 currentSeed: 'Salmo salar',
                 currentSpecimen: null,
                 currentRatio: { w: 3, h: 2 },
-                currentTheme: 'linnaean',
                 renderMode: 'static', // 'static' or 'anim'
                 animSpeed: 0.005,
-                paletteConfig: {
-                    linnaean: { stroke: '#2A2520', accent: '#8B1A1A', bg: '#EFE9DC', meta: '#7A7068' },
-                    cyanotype: { stroke: '#E6EEF8', accent: '#60A5FA', bg: '#223244', meta: '#94A3B8' },
-                    challenger: { stroke: '#F1F5F9', accent: '#F59E0B', bg: '#131E32', meta: '#94A3B8' },
-                    vellum: { stroke: '#18181B', accent: '#2563EB', bg: '#FFFFFF', meta: '#71717A' }
+                palette: {
+                    stroke: '#2A2520',
+                    accent: '#8B1A1A',
+                    bg: '#EFE9DC',
+                    meta: '#7A7068'
                 }
             };
 
@@ -667,16 +583,14 @@
                 target: document.getElementById('render-target'),
                 seedInput: document.getElementById('seed-input'),
                 idLoadInput: document.getElementById('id-load-input'),
-                themeSelect: document.getElementById('theme-select'),
                 randomBtn: document.getElementById('random-btn'),
                 formatMatrix: document.getElementById('format-matrix'),
                 ratioBtns: document.querySelectorAll('.ratio-btn'),
                 modeStaticBtn: document.getElementById('mode-static-btn'),
                 modeAnimBtn: document.getElementById('mode-anim-btn'),
-                replayDrawBtn: document.getElementById('replay-draw-btn'),
-                plotSpeedIndicator: document.getElementById('plot-speed-indicator'),
-                canvasDimBadge: document.getElementById('canvas-dim-badge'),
-                strokeMetricLine: document.getElementById('stroke-metric-line'),
+                embedModeSwitcher: document.getElementById('embed-mode-switcher'),
+                embedStaticBtn: document.getElementById('embed-static-btn'),
+                embedAnimBtn: document.getElementById('embed-anim-btn'),
                 accessionBadge: document.getElementById('accession-badge'),
                 fullscreenBtn: document.getElementById('fullscreen-btn'),
                 fullscreenViewer: document.getElementById('fullscreen-viewer'),
@@ -689,7 +603,6 @@
                 svgBtn: document.getElementById('svg-btn'),
                 animSvgBtn: document.getElementById('anim-svg-btn'),
                 pngBtn: document.getElementById('png-btn'),
-                plotterBtn: document.getElementById('plotter-btn'),
                 embedBtn: document.getElementById('embed-btn'),
                 // Telemetry
                 telLength: document.getElementById('tel-length'),
@@ -766,9 +679,6 @@
                 STATE.currentSeed = seed;
 
                 const dims = getCanvasDimensions(STATE.currentRatio);
-                DOM.canvasDimBadge.textContent = `${dims.w}×${dims.h}`;
-
-                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
 
                 // Call enhanced FishDraw engine
                 const specimen = window.FishDraw.generateSpecimen({
@@ -792,8 +702,6 @@
                 DOM.telDentition.textContent = `${specimen.metrics.dentition} / ${specimen.metrics.barbels}`;
                 DOM.telHash.textContent = specimen.metrics.hashHex;
 
-                DOM.strokeMetricLine.textContent = `STROKES: ${specimen.metrics.strokeCount} // PTS: ${specimen.metrics.pointCount.toLocaleString()}`;
-
                 // Render into Viewport
                 renderViewport();
 
@@ -801,7 +709,6 @@
                 if (document.body.dataset.mode !== 'embed') {
                     const url = new URL(window.location);
                     url.searchParams.set('seed', seed);
-                    url.searchParams.set('theme', STATE.currentTheme);
                     url.searchParams.set('w', STATE.currentRatio.w);
                     url.searchParams.set('h', STATE.currentRatio.h);
                     if (STATE.renderMode !== 'static') {
@@ -813,12 +720,49 @@
                 }
             }
 
+            // Centralized Mode Handler: static vs anim
+            function setRenderMode(mode) {
+                STATE.renderMode = mode;
+
+                // Update main panel toggle
+                if (DOM.modeStaticBtn && DOM.modeAnimBtn) {
+                    if (mode === 'anim') {
+                        DOM.modeAnimBtn.classList.add('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                        DOM.modeAnimBtn.classList.remove('text-[var(--archival-meta)]');
+                        DOM.modeStaticBtn.classList.remove('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                        DOM.modeStaticBtn.classList.add('text-[var(--archival-meta)]');
+                    } else {
+                        DOM.modeStaticBtn.classList.add('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                        DOM.modeStaticBtn.classList.remove('text-[var(--archival-meta)]');
+                        DOM.modeAnimBtn.classList.remove('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                        DOM.modeAnimBtn.classList.add('text-[var(--archival-meta)]');
+                    }
+                }
+
+                // Update embed floating mode switcher
+                if (DOM.embedStaticBtn && DOM.embedAnimBtn) {
+                    if (mode === 'anim') {
+                        DOM.embedAnimBtn.classList.add('text-[var(--archival-fg)]', 'font-semibold');
+                        DOM.embedAnimBtn.classList.remove('text-[var(--archival-meta)]');
+                        DOM.embedStaticBtn.classList.remove('text-[var(--archival-fg)]', 'font-semibold');
+                        DOM.embedStaticBtn.classList.add('text-[var(--archival-meta)]');
+                    } else {
+                        DOM.embedStaticBtn.classList.add('text-[var(--archival-fg)]', 'font-semibold');
+                        DOM.embedStaticBtn.classList.remove('text-[var(--archival-meta)]');
+                        DOM.embedAnimBtn.classList.remove('text-[var(--archival-fg)]', 'font-semibold');
+                        DOM.embedAnimBtn.classList.add('text-[var(--archival-meta)]');
+                    }
+                }
+
+                renderViewport();
+            }
+
             // Render Specimen SVG in Viewport according to current renderMode
             function renderViewport() {
                 if (!STATE.currentSpecimen) return;
 
                 const dims = getCanvasDimensions(STATE.currentRatio);
-                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+                const theme = STATE.palette;
 
                 let svgMarkup = '';
 
@@ -841,16 +785,12 @@
                         ...plateOpts,
                         bg: 'transparent'
                     });
-                    DOM.replayDrawBtn.classList.remove('hidden');
-                    DOM.plotSpeedIndicator.classList.remove('hidden');
                 } else {
                     // Clean static vector plate
                     svgMarkup = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
                         ...plateOpts,
                         bg: 'transparent'
                     });
-                    DOM.replayDrawBtn.classList.add('hidden');
-                    DOM.plotSpeedIndicator.classList.add('hidden');
                 }
 
                 DOM.target.innerHTML = svgMarkup;
@@ -906,37 +846,27 @@
                 }
             });
 
-            // Archival Theme Selector
-            DOM.themeSelect.addEventListener('change', (e) => {
-                const theme = e.target.value;
-                STATE.currentTheme = theme;
-                document.body.dataset.theme = theme;
-                renderViewport();
-            });
-
-            // Mode Toggle: Static vs Plotter
+            // Mode Toggle: Static vs Plotter (Main Panel)
             DOM.modeStaticBtn.addEventListener('click', () => {
-                STATE.renderMode = 'static';
-                DOM.modeStaticBtn.classList.add('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
-                DOM.modeStaticBtn.classList.remove('text-[var(--archival-meta)]');
-                DOM.modeAnimBtn.classList.remove('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
-                DOM.modeAnimBtn.classList.add('text-[var(--archival-meta)]');
-                renderViewport();
+                setRenderMode('static');
             });
 
             DOM.modeAnimBtn.addEventListener('click', () => {
-                STATE.renderMode = 'anim';
-                DOM.modeAnimBtn.classList.add('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
-                DOM.modeAnimBtn.classList.remove('text-[var(--archival-meta)]');
-                DOM.modeStaticBtn.classList.remove('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
-                DOM.modeStaticBtn.classList.add('text-[var(--archival-meta)]');
-                renderViewport();
+                setRenderMode('anim');
             });
 
-            // Re-Plot Button
-            DOM.replayDrawBtn.addEventListener('click', () => {
-                renderViewport();
-            });
+            // Embed Mode Toggle: Static vs Anim
+            if (DOM.embedStaticBtn) {
+                DOM.embedStaticBtn.addEventListener('click', () => {
+                    setRenderMode('static');
+                });
+            }
+
+            if (DOM.embedAnimBtn) {
+                DOM.embedAnimBtn.addEventListener('click', () => {
+                    setRenderMode('anim');
+                });
+            }
 
             // Button Feedback Utility
             function buttonFeedback(buttonDom, originalHtml, successHtml) {
@@ -952,7 +882,7 @@
             DOM.svgBtn.addEventListener('click', async () => {
                 if (!STATE.currentSpecimen) return;
                 const dims = getCanvasDimensions(STATE.currentRatio);
-                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+                const theme = STATE.palette;
 
                 const svgContent = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
                     width: dims.w,
@@ -990,7 +920,7 @@
             DOM.animSvgBtn.addEventListener('click', () => {
                 if (!STATE.currentSpecimen) return;
                 const dims = getCanvasDimensions(STATE.currentRatio);
-                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+                const theme = STATE.palette;
 
                 const animSvgContent = window.FishDraw.draw_svg_anim(STATE.currentSpecimen.polylines, STATE.animSpeed, {
                     width: dims.w,
@@ -1024,7 +954,7 @@
                 DOM.pngBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> [ RENDERING ]';
 
                 const dims = getCanvasDimensions(STATE.currentRatio);
-                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+                const theme = STATE.palette;
 
                 // High resolution scale (2.5x base for crisp 300DPI equivalent)
                 const scale = 2.5;
@@ -1091,28 +1021,11 @@
                 img.src = url;
             });
 
-            // Export 4: Plotter CSV Coordinates
-            DOM.plotterBtn.addEventListener('click', () => {
-                if (!STATE.currentSpecimen) return;
-                const polylines = STATE.currentSpecimen.polylines;
-                const csvRows = polylines.map(p => p.map(pt => `${pt[0].toFixed(2)},${pt[1].toFixed(2)}`).join(';'));
-                const csvContent = `# FISH VAULT // PLOTTER VECTOR STROKE COORDINATES\n# TAXON: ${STATE.currentSeed}\n# ACCESSION: ${STATE.currentSpecimen.accessionId}\n# FORMAT: x1,y1;x2,y2;x3,y3... (ONE POLYLINE PER ROW)\n` + csvRows.join('\n');
-
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.download = `plotter_${STATE.currentSpecimen.accessionId}.csv`;
-                a.href = url;
-                a.click();
-                URL.revokeObjectURL(url);
-
-                buttonFeedback(DOM.plotterBtn, DOM.plotterBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ CSV EXPORTED ]');
-            });
-
-            // Export 5: Embed Protocol Modal / Copy (Parity with Geometry Vault)
+            // Export 4: Embed Protocol Modal / Copy (Parity with Geometry Vault)
             DOM.embedBtn.addEventListener('click', async () => {
                 const seedParam = STATE.currentSeed ? `&seed=${encodeURIComponent(STATE.currentSeed)}` : "";
-                const embedUrl = `${window.location.origin}${window.location.pathname}?mode=embed${seedParam}&theme=${STATE.currentTheme}&w=${STATE.currentRatio.w}&h=${STATE.currentRatio.h}`;
+                const modeParam = STATE.renderMode === 'anim' ? "&mode_render=anim" : "";
+                const embedUrl = `${window.location.origin}${window.location.pathname}?mode=embed${seedParam}&w=${STATE.currentRatio.w}&h=${STATE.currentRatio.h}${modeParam}`;
                 const iframeCode = `<iframe src="${embedUrl}" width="500" height="500" frameborder="0" style="border:1px solid #DDD5C5; border-radius:4px;"></iframe>`;
 
                 try {
@@ -1130,7 +1043,7 @@
                 DOM.viewerSeq.textContent = `ACCESSION: ${STATE.currentSpecimen.accessionId}`;
                 
                 const dims = getCanvasDimensions(STATE.currentRatio);
-                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+                const theme = STATE.palette;
 
                 const svgMarkup = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
                     width: dims.w,
@@ -1181,11 +1094,6 @@
                         DOM.idLoadInput.value = data.id;
                         DOM.seedInput.value = data.id;
                     }
-                    if (data.theme && STATE.paletteConfig[data.theme]) {
-                        STATE.currentTheme = data.theme;
-                        DOM.themeSelect.value = data.theme;
-                        document.body.dataset.theme = data.theme;
-                    }
                     if (data.w && data.h) {
                         DOM.ratioBtns.forEach(btn => {
                             if (btn.dataset.w == data.w && btn.dataset.h == data.h) {
@@ -1196,20 +1104,15 @@
                         });
                     }
                     if (data.mode_render) {
-                        STATE.renderMode = data.mode_render;
+                        setRenderMode(data.mode_render);
                     }
                     synthesizeSpecimen();
                 } else if (type === 'SET_SEED' && data.seed) {
                     DOM.seedInput.value = data.seed;
                     DOM.idLoadInput.value = '';
                     synthesizeSpecimen();
-                } else if (type === 'SET_THEME' && data.theme) {
-                    if (STATE.paletteConfig[data.theme]) {
-                        STATE.currentTheme = data.theme;
-                        DOM.themeSelect.value = data.theme;
-                        document.body.dataset.theme = data.theme;
-                        renderViewport();
-                    }
+                } else if (type === 'SET_MODE' && data.mode) {
+                    setRenderMode(data.mode);
                 }
             });
 
@@ -1227,21 +1130,6 @@
                     DOM.idLoadInput.value = params.get('id');
                 }
 
-                if (params.get('theme')) {
-                    const theme = params.get('theme');
-                    if (STATE.paletteConfig[theme]) {
-                        STATE.currentTheme = theme;
-                        DOM.themeSelect.value = theme;
-                        document.body.dataset.theme = theme;
-                    }
-                }
-
-                if (params.get('mode_render') === 'anim') {
-                    STATE.renderMode = 'anim';
-                    DOM.modeAnimBtn.classList.add('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
-                    DOM.modeStaticBtn.classList.remove('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
-                }
-
                 if (params.get('w') && params.get('h')) {
                     const pw = params.get('w');
                     const ph = params.get('h');
@@ -1252,6 +1140,14 @@
                             STATE.currentRatio = { w: parseFloat(pw), h: parseFloat(ph) };
                         }
                     });
+                }
+
+                // Synthesis mode: default to static unless anim is explicitly requested
+                const modeParam = params.get('mode_render') || params.get('render');
+                if (modeParam === 'anim' || params.get('anim') === 'true' || params.get('anim') === '1') {
+                    setRenderMode('anim');
+                } else {
+                    setRenderMode('static');
                 }
 
                 // Initial Synthesis Run
