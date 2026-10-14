@@ -99,7 +99,6 @@
             <div class="text-right hidden sm:block">
                 <p class="font-tech text-[10px] text-[#7A7068]">VERSION: 1.0.0</p>
                 <p class="font-tech text-[10px] text-[#7A7068]">ENGINE: LINGDONG-PISCES</p>
-                <p class="font-tech text-[10px] text-[#8B1A1A]">STATUS: OPERATIONAL</p>
             </div>
         </header>
 
@@ -278,19 +277,21 @@ console.log(specimen.accessionId); // "FV-25-9AC9"
 console.log(specimen.metrics.standardLength); // "342 mm"
 console.log(specimen.polylines); // Array of [[x, y], ...] strokes
 
-// 2. Render clean vector SVG
+// 2. Render clean vector SVG with archival plate stamps
 const svgString = window.FishDraw.draw_svg(specimen.polylines, {
     width: 600,
     height: 400,
     stroke: '#2A2520',
-    bg: '#EFE9DC'
+    bg: '#EFE9DC',
+    specimen: specimen
 });
 
 // 3. Render animated SMIL pen-plotter SVG
 const animSvgString = window.FishDraw.draw_svg_anim(specimen.polylines, 0.005, {
     width: 600,
     height: 400,
-    stroke: '#2A2520'
+    stroke: '#2A2520',
+    specimen: specimen
 });</code></pre>
             </section>
         </main>

@@ -25,7 +25,7 @@ Fish Vault includes a zero-dependency client library in `js/fishdraw.js` that at
   console.log('Standard Length:', specimen.metrics.standardLength);
   console.log('Caudal Tail Type:', specimen.metrics.tailMorphology);
 
-  // 2. Generate clean vector SVG
+  // 2. Generate clean vector SVG with archival plate stamps
   const svgMarkup = window.FishDraw.draw_svg(specimen.polylines, {
     width: 600,
     height: 400,
@@ -33,7 +33,8 @@ Fish Vault includes a zero-dependency client library in `js/fishdraw.js` that at
     stroke: '#2A2520',
     strokeWidth: 1.1,
     margin: 12,
-    border: true
+    border: true,
+    specimen: specimen
   });
 
   document.getElementById('plate-container').innerHTML = svgMarkup;
@@ -73,12 +74,13 @@ const specimen = FishDraw.generateSpecimen({
   pad: 40
 });
 
-// Output static SVG
+// Output static SVG with archival accession plate stamps
 const svg = FishDraw.draw_svg(specimen.polylines, {
   width: 800,
   height: 500,
   bg: '#EFE9DC',
-  stroke: '#2A2520'
+  stroke: '#2A2520',
+  specimen: specimen
 });
 
 fs.writeFileSync('specimen_plate.svg', svg);

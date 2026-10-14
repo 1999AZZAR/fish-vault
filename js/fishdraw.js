@@ -795,6 +795,8 @@ function draw_svg(polylines, options = {}){
   if (border){
     o += `  <rect x="${margin}" y="${margin}" width="${width - margin * 2}" height="${height - margin * 2}" stroke="${stroke}" stroke-width="${strokeWidth}" fill="none"/>\n`;
   }
+
+  // Draw procedural polylines
   o += `  <path stroke="${stroke}" stroke-width="${strokeWidth}" fill="none" stroke-linecap="round" stroke-linejoin="round" d="`;
   for (let i = 0; i < polylines.length; i++){
     if (!polylines[i] || polylines[i].length === 0) continue;
@@ -804,7 +806,28 @@ function draw_svg(polylines, options = {}){
       o += `${(~~((x+margin)*100)) /100} ${(~~((y+margin)*100)) /100} `;
     }
   }
-  o += `\n"/>\n</svg>`;
+  o += `\n"/>\n`;
+
+  // Print Accession ID & PTR Metadata directly on the plate (Matching Geometry Vault)
+  let accessionId = options.accessionId || (options.metrics && options.metrics.accessionId) || (options.specimen && options.specimen.accessionId) || "";
+  let hashHex = options.hashHex || (options.metrics && options.metrics.hashHex) || (options.specimen && options.specimen.metrics && options.specimen.metrics.hashHex) || "";
+  let metaColor = options.metaColor || options.stroke || "#7A7068";
+  let metrics = options.metrics || (options.specimen && options.specimen.metrics) || null;
+  let sl = metrics && metrics.standardLength ? ` // SL:${metrics.standardLength}` : "";
+  let bd = metrics && metrics.bodyDepth ? ` // BD:${metrics.bodyDepth}` : "";
+
+  if (accessionId || hashHex) {
+    let fontSize = Math.max(7.5, Math.min(10, Math.round(Math.min(width, height) * 0.018)));
+    o += `  <g id="archival-plate-stamps" font-family="'JetBrains Mono', monospace" font-size="${fontSize}" letter-spacing="0.08em" fill="${metaColor}">\n`;
+    o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId || 'FV-ARCHIVAL'}${sl}${bd}</text>\n`;
+    if (hashHex) {
+      o += `    <text x="${width - margin - 6}" y="${margin + 13}" text-anchor="end">PTR:${hashHex}</text>\n`;
+    }
+    o += `    <text x="${margin + 6}" y="${margin + 13}">ARCHIVAL PISCES // FIG. 01</text>\n`;
+    o += `  </g>\n`;
+  }
+
+  o += `</svg>`;
   return o;
 }
 
@@ -854,6 +877,26 @@ function draw_svg_anim(polylines, speed = 0.005, options = {}){
     o += `    <animate id="a${i}" attributeName="stroke-dashoffset" fill="freeze" from="${l.toFixed(2)}" to="0" dur="${t.toFixed(3)}s" begin="${beginTime}s" />\n`;
     o += `  </path>\n`;
   }
+
+  // Print Accession ID & PTR Metadata on animated plate as well
+  let accessionId = options.accessionId || (options.metrics && options.metrics.accessionId) || (options.specimen && options.specimen.accessionId) || "";
+  let hashHex = options.hashHex || (options.metrics && options.metrics.hashHex) || (options.specimen && options.specimen.metrics && options.specimen.metrics.hashHex) || "";
+  let metaColor = options.metaColor || options.stroke || "#7A7068";
+  let metrics = options.metrics || (options.specimen && options.specimen.metrics) || null;
+  let sl = metrics && metrics.standardLength ? ` // SL:${metrics.standardLength}` : "";
+  let bd = metrics && metrics.bodyDepth ? ` // BD:${metrics.bodyDepth}` : "";
+
+  if (accessionId || hashHex) {
+    let fontSize = Math.max(7.5, Math.min(10, Math.round(Math.min(width, height) * 0.018)));
+    o += `  <g id="archival-plate-stamps" font-family="'JetBrains Mono', monospace" font-size="${fontSize}" letter-spacing="0.08em" fill="${metaColor}">\n`;
+    o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId || 'FV-ARCHIVAL'}${sl}${bd}</text>\n`;
+    if (hashHex) {
+      o += `    <text x="${width - margin - 6}" y="${margin + 13}" text-anchor="end">PTR:${hashHex}</text>\n`;
+    }
+    o += `    <text x="${margin + 6}" y="${margin + 13}">ARCHIVAL PISCES // FIG. 01</text>\n`;
+    o += `  </g>\n`;
+  }
+
   o += `</svg>`;
   return o;
 }
@@ -1895,6 +1938,37 @@ function fish_head(x0,y0,x1,y1,x2,y2,arg){
     bbs.push(bb1,...bb2c,...bb3c);
   }
 
+  if (arg.has_catfish_barbels){
+    let cbl = arg.barbel_length || 45;
+    let bbC0 = barbel(...jaw_pt0, cbl, PI * 0.82, 2.2);
+    let bbC1 = barbel(jaw_pt0[0] + 4, jaw_pt0[1] - 4, cbl * 0.8, PI * 0.74, 2.0);
+    bbs.push(bbC0, bbC1);
+  }
+
+  if (arg.has_esca_lure){
+    let stalkOrigin = curve0[2] || [x0, y0];
+    let stalkLen = arg.esca_length || 38;
+    let stalkAng = -PI * 0.65;
+    let lurePoly = [];
+    let lx = stalkOrigin[0];
+    let ly = stalkOrigin[1];
+    lurePoly.push([lx, ly]);
+    for (let i = 0; i < 16; i++){
+      lx += Math.cos(stalkAng) * (stalkLen / 16);
+      ly += Math.sin(stalkAng) * (stalkLen / 16);
+      stalkAng += 0.06;
+      lurePoly.push([lx, ly]);
+    }
+    let bulbR = 5;
+    let bulbPoly = [];
+    for (let a = 0; a <= PI * 2; a += PI / 6){
+      bulbPoly.push([lx + Math.cos(a) * bulbR, ly + Math.sin(a) * bulbR]);
+    }
+    let fringe0 = [[lx, ly - bulbR], [lx - 3, ly - bulbR - 5]];
+    let fringe1 = [[lx + bulbR, ly], [lx + bulbR + 4, ly - 3]];
+    bbs.push(lurePoly, bulbPoly, fringe0, fringe1);
+  }
+
   let outlinel = [[0,0],[curve0[curve0.length-1][0],0],curve0[curve0.length-1],...curve2,curve1[0],[curve1[0][0],300],[0,300]];
 
   
@@ -1949,6 +2023,55 @@ function fish(arg){
       let y = 150+lerp(1-arg.body_curve_amount,1,lerp(0,1,noise(t*1.2,2))*bean(1-t))*arg.body_height;
       curve1.push([x,y]);
     }
+  }else if (arg.body_curve_type == 2){
+    let s = arg.body_curve_amount;
+    for (let i = 0; i < n; i++){
+      let t = i/(n-1);
+      let x = 225 + (t-0.5)*arg.body_length;
+      let wave = Math.sin(t*PI*1.5)*10*s;
+      let taper = Math.sin(Math.pow(t, 0.4)*PI);
+      let y = 150 - (taper * 0.45 * arg.body_height + wave + (1-s)*10);
+      curve0.push([x,y]);
+    }
+    for (let i = 0; i < n; i++){
+      let t = i/(n-1);
+      let x = 225 + (t-0.5)*arg.body_length;
+      let wave = Math.sin(t*PI*1.5)*10*s;
+      let taper = Math.sin(Math.pow(t, 0.4)*PI);
+      let y = 150 + (taper * 0.45 * arg.body_height - wave + (1-s)*10);
+      curve1.push([x,y]);
+    }
+  }else if (arg.body_curve_type == 3){
+    let s = arg.body_curve_amount;
+    for (let i = 0; i < n; i++){
+      let t = i/(n-1);
+      let x = 225 + (t-0.5)*arg.body_length;
+      let disc0 = Math.pow(Math.sin(t*PI), 0.65) * (1.35 + 0.15*noise(t*2,1));
+      let y = 150 - disc0 * arg.body_height * s;
+      curve0.push([x,y]);
+    }
+    for (let i = 0; i < n; i++){
+      let t = i/(n-1);
+      let x = 225 + (t-0.5)*arg.body_length;
+      let disc1 = Math.pow(Math.sin(t*PI), 0.65) * (1.3 + 0.15*noise(t*2,2));
+      let y = 150 + disc1 * arg.body_height * s;
+      curve1.push([x,y]);
+    }
+  }else if (arg.body_curve_type == 4){
+    for (let i = 0; i < n; i++){
+      let t = i/(n-1);
+      let x = 225 + (t-0.5)*arg.body_length;
+      let torpedo0 = Math.sin(Math.pow(t, 0.62)*PI);
+      let y = 150 - (torpedo0 * (1.08 - 0.22*t) + noise(t*1.5,1)*0.05)*arg.body_height;
+      curve0.push([x,y]);
+    }
+    for (let i = 0; i < n; i++){
+      let t = i/(n-1);
+      let x = 225 + (t-0.5)*arg.body_length;
+      let torpedo1 = Math.sin(Math.pow(t, 0.62)*PI);
+      let y = 150 + (torpedo1 * (1.04 - 0.25*t) + noise(t*1.5,2)*0.05)*arg.body_height;
+      curve1.push([x,y]);
+    }
   }
   let outline = curve0.concat(curve1.slice().reverse());
   let sh = shade_shape(outline,8,-12,-12);
@@ -1974,6 +2097,26 @@ function fish(arg){
   }else if (arg.pattern_type == 4){
     //small dot;
     pattern_func = null;
+  }else if (arg.pattern_type == 5){
+    pattern_func = (x,y)=>{
+      let s = 14 * arg.pattern_scale;
+      let hx = Math.abs((x % s) - s * 0.5);
+      let hy = Math.abs((y % (s * 1.15)) - s * 0.57);
+      return (hx * hx + hy * hy) < Math.pow(s * 0.28, 2);
+    };
+  }else if (arg.pattern_type == 6){
+    pattern_func = (x,y)=>{
+      let dx = x - 235;
+      let dy = y - 145;
+      let d = Math.hypot(dx, dy);
+      let r = 26 * arg.pattern_scale;
+      return (d < r && d > r * 0.55) || (d < r * 0.22);
+    };
+  }else if (arg.pattern_type == 7){
+    pattern_func = (x,y)=>{
+      let dy = noise(x * 0.02, y * 0.04) * 10;
+      return (~~((y + dy) / (11 * arg.pattern_scale))) % 2 === 0;
+    };
   }
 
   let bd;
@@ -1998,6 +2141,16 @@ function fish(arg){
     f0_a1 = 0.3 + deviate(0.05);
     f0_cv = arg.dorsal_length/8;
     f0_func = t=>(  arg.dorsal_length* ((Math.pow(t-1,2))*0.5 + (1-t)*0.5)  );
+  }else if (arg.dorsal_type == 2){
+    f0_a0 = 0.15 + deviate(0.04);
+    f0_a1 = 0.25 + deviate(0.04);
+    f0_cv = 0;
+    f0_func = t=>(  1.55 * arg.dorsal_length * Math.pow(Math.sin(t*PI), 0.35)  );
+  }else if (arg.dorsal_type == 3){
+    f0_a0 = 0.45 + deviate(0.05);
+    f0_a1 = 0.15 + deviate(0.05);
+    f0_cv = arg.dorsal_length/10;
+    f0_func = t=>(  arg.dorsal_length * (0.75 + 0.35 * Math.sin(t*12.5) + noise(t*4)*0.2)  );
   }
   let f0_curve,c0,f0;
   if (arg.dorsal_texture_type == 0){
@@ -2116,6 +2269,18 @@ function fish(arg){
     f4_curve = [curve0[curve0.length-2], curve1[curve1.length-2]];
     f4_curve = resample(f4_curve,f4_d);
     ;[c4,f4] = fin_a(f4_curve,-0.6,0.6,t=>(  (1-Math.sin(t*PI)**0.4*0.55)*arg.tail_length  ),1);
+  }else if (arg.tail_type == 6){
+    f4_curve = [curve0[curve0.length-2], curve1[curve1.length-2]];
+    f4_curve = resample(f4_curve,f4_d);
+    ;[c4,f4] = fin_a(f4_curve,-0.7,0.4,t=>( (t < 0.45 ? (1.5 - t * 1.8) * 1.25 : (t - 0.45) * 0.85 + 0.2) * arg.tail_length ),1);
+  }else if (arg.tail_type == 7){
+    f4_curve = [curve0[curve0.length-1], curve1[curve1.length-1]];
+    f4_curve = resample(f4_curve,f4_d*0.7);
+    let cv = arg.tail_length/6;
+    ;[c4,f4] = fin_a(f4_curve,-0.65,0.65,t=>{
+      let d = Math.abs(t - 0.5) * 2;
+      return (0.35 + 1.25 * Math.pow(d, 2.2)) * arg.tail_length;
+    },1,cv,-cv);
   }
   // f4 = clip_multi(f4,trsl_poly(outline,-1,0)).false;
   bd = clip_multi(bd,trsl_poly(c4,1,0)).false;
@@ -2282,6 +2447,10 @@ function default_params(){
     has_moustache:1,
     moustache_length:10,
     has_beard:0,
+    has_catfish_barbels:0,
+    barbel_length:45,
+    has_esca_lure:0,
+    esca_length:38,
     has_teeth:1,
     teeth_length:8,
     teeth_space:3.5,
@@ -2294,8 +2463,8 @@ function default_params(){
 }
 
 function choice(opts,percs){
-  if (!percs){
-    percs = opts.map(x=>1);
+  if (!percs || percs.length !== opts.length){
+    percs = opts.map((x, i) => (percs && percs[i] !== undefined ? percs[i] : 3));
   }
   let s = 0;
   for (let i = 0; i < percs.length; i++){
@@ -2329,23 +2498,29 @@ function rndtri(a,b,c){
 function generate_params(){
 
   let arg = default_params();
-  arg.body_curve_type =   choice([0,1]);
+  arg.body_curve_type =   choice([0,1,2,3,4]);
   arg.body_curve_amount = rndtri(0.5,0.85,0.98);
   arg.body_length = rndtri(200,350,420);
   arg.body_height = rndtri(45,90,150);
   arg.scale_type = choice([0,1,2,3]);
   arg.scale_scale = rndtri(0.8,1,1.5);
-  arg.pattern_type = choice([0,1,2,3,4]);
+  arg.pattern_type = choice([0,1,2,3,4,5,6,7]);
   arg.pattern_scale = rndtri(0.5,1,2);
   arg.dorsal_texture_type = choice([0,1]);
-  arg.dorsal_type = choice([0,1]);
+  arg.dorsal_type = choice([0,1,2,3]);
   arg.dorsal_length = rndtri(30,90,180);
   if (arg.dorsal_type == 0){
     arg.dorsal_start = ~~rndtri(7,8,15);
     arg.dorsal_end   = ~~rndtri(20,27,28);
-  }else{
+  }else if (arg.dorsal_type == 1){
     arg.dorsal_start = ~~rndtri(11,12,16);
     arg.dorsal_end   = ~~rndtri(19,21,24);
+  }else if (arg.dorsal_type == 2){
+    arg.dorsal_start = ~~rndtri(5,7,9);
+    arg.dorsal_end   = ~~rndtri(24,26,28);
+  }else if (arg.dorsal_type == 3){
+    arg.dorsal_start = ~~rndtri(8,10,14);
+    arg.dorsal_end   = ~~rndtri(20,24,26);
   }
   arg.wing_texture_type = choice([0,1]);
   arg.wing_type = choice([0,1]);
@@ -2382,7 +2557,7 @@ function generate_params(){
   arg.anal_start = ~~rndtri(16,19,23);
   arg.anal_end = ~~rndtri(25,29,31);
 
-  arg.tail_type = choice([0,1,2,3,4,5]);
+  arg.tail_type = choice([0,1,2,3,4,5,6,7]);
   arg.tail_length = rndtri(50,75,180);
 
   arg.finlet_type = choice([0,1,2,3]);
@@ -2398,6 +2573,11 @@ function generate_params(){
   arg.moustache_length = ~~rndtri(10,20,40);
   arg.beard_length = ~~rndtri(20,30,50);
 
+  arg.has_catfish_barbels = choice([0,0,0,0,1]);
+  arg.barbel_length = rndtri(30,48,65);
+  arg.has_esca_lure = choice([0,0,0,0,0,1]);
+  arg.esca_length = rndtri(25,38,55);
+
   arg.eye_type = choice([0,1]);
   arg.eye_size = rndtri(8,10,28)//arg.body_height/6//Math.min(arg.body_height/6,rndtri(8,10,30));
 
@@ -2412,12 +2592,12 @@ function generate_params(){
 
 
 function binomen(){
-  let data =[["A","AB","AL","AN","AP","AR","AU","BA","BE","BO","BRA","CA","CAR","CENT","CHAE","CHAN","CHI","CHRO","CHRY","CO","CTE","CY","CYP","DE","E","EU","GA","GAS","GNA","GO","HE","HIP","HO","HY","LA","LAB","LE","LI","LO","LU","MAC","ME","MIC","MO","MU","MY","NA","NAN","NE","NO","O","ON","OP","OS","PA","PER","PHO","PI","PLA","PLEU","PO","PSEU","PTE","RA","RHI","RHOM","RU","SAL","SAR","SCA","SCOM","SE","SI","STE","TAU","TEL","THO","TRI","XE","XI"],
+  let data =[["A","AB","AL","AN","AP","AR","AU","BA","BE","BO","BRA","CA","CAR","CENT","CHAE","CHAN","CHI","CHRO","CHRY","CO","CTE","CY","CYP","DE","E","EU","GA","GAS","GNA","GO","HE","HIP","HO","HY","LA","LAB","LE","LI","LO","LU","MAC","ME","MIC","MO","MU","MY","NA","NAN","NE","NO","O","ON","OP","OS","PA","PER","PHO","PI","PLA","PLEU","PO","PSEU","PTE","RA","RHI","RHOM","RU","SAL","SAR","SCA","SCOM","SE","SI","STE","TAU","TEL","THO","TRI","XE","XI","BATHY","ACANTHO","CHLAMYDO","TRACHY","OPHID","ZEUS","SYN","ICTIO","HAPLO","NOTO","SCORP","GYMNO","RHINO","PERCO","MACRO","LOPHIO"],
   ["BE","BI","BO","BU","CA","CAM","CAN","CE","CENT","CHA","CHEI","CHI","CHO","CHY","CI","CIRR","CO","DI","DO","DON","DOP","GA","GAS","GO","HI","HYN","LA","LAB","LE","LEOT","LI","LICH","LIS","LO","LOS","LU","LY","MA","ME","MI","MICH","MO","MU","NA","NE","NEC","NI","NO","NOCH","NOP","NOS","PA","PE","PEN","PHA","PHI","PHO","PHY","PHYO","PI","PIP","PIS","PO","POG","POPH","RA","RAE","RAM","REOCH","RI","RICH","RIP","RIS","RO","ROI","ROP","ROS","RY","RYN","SE","SO","TA","TE","TEL","THAL","THE","THO","THOP","THU","TI","TICH","TO","TOG","TOP","TOS","VA","XI","XO"],
   ["BIUS","BUS","CA","CHUS","CION","CON","CUS","DA","DES","DEUS","DON","DUS","GER","GON","GUS","HUS","LA","LEA","LIS","LIUS","LUS","MA","MIS","MUS","NA","NIA","NIO","NIUS","NOPS","NUS","PHEUS","PHIS","PIS","PUS","RA","RAS","RAX","RIA","RION","RIS","RUS","RYS","SA","SER","SIA","SIS","SUS","TER","TES","TEUS","THUS","THYS","TIA","TIS","TUS","TYS"],
-  ["A","AE","AL","AN","AR","AT","AU","AUST","AY","BA","BAR","BE","BI","BO","CA","CAL","CAM","CAN","CAR","CAU","CE","CHI","CHRY","COR","CRY","CU","CYA","DA","DE","DEN","DI","DIA","DO","DOR","DU","E","FA","FAS","FES","FI","FLO","FOR","FRE","FUR","GLA","GO","HA","HE","HIP","HO","HYP","I","IM","IN","JA","LA","LAB","LE","LEU","LI","LO","LU","MA","MAC","MAR","ME","MO","MOO","MOR","NA","NE","NI","NIG","NO","O","OR","PA","PAL","PE","PEC","PHO","PLA","PLU","PO","PRO","PU","PUL","RA","RE","RHOM","RI","RO","ROST","RU","SA","SAL","SE","SO","SPI","SPLEN","STRIA","TAU","THO","TRI","TY","U","UN","VA","VI","VIT","VUL","WAL","XAN"],
+  ["A","AE","AL","AN","AR","AT","AU","AUST","AY","BA","BAR","BE","BI","BO","CA","CAL","CAM","CAN","CAR","CAU","CE","CHI","CHRY","COR","CRY","CU","CYA","DA","DE","DEN","DI","DIA","DO","DOR","DU","E","FA","FAS","FES","FI","FLO","FOR","FRE","FUR","GLA","GO","HA","HE","HIP","HO","HYP","I","IM","IN","JA","LA","LAB","LE","LEU","LI","LO","LU","MA","MAC","MAR","ME","MO","MOO","MOR","NA","NE","NI","NIG","NO","O","OR","PA","PAL","PE","PEC","PHO","PLA","PLU","PO","PRO","PU","PUL","RA","RE","RHOM","RI","RO","ROST","RU","SA","SAL","SE","SO","SPI","SPLEN","STRIA","TAU","THO","TRI","TY","U","UN","VA","VI","VIT","VUL","WAL","XAN","OCCIDENTALIS","ORIENTALIS","JAPONICUS","VULGARIS","TYPUS","SPLENDENS","ELEGANS","ABYSSALIS","GLACIALIS","GIGAS","CORONATUS","AURATUS","ARGENTATUS","IMPERATOR","PELAGICUS"],
   ["BA","BAR","BER","BI","BO","BOI","BU","CA","CAN","CAU","CE","CEL","CHA","CHEL","CHOP","CI","CIA","CIL","CIO","CO","COS","CU","DA","DE","DEL","DI","DIA","DO","FAS","FEL","FI","FOR","GA","GE","GI","HA","HYN","KE","LA","LAN","LE","LEA","LEU","LI","LIA","LO","LON","LOP","MA","ME","MEN","MI","MIE","MO","NA","NE","NEA","NEL","NEN","NI","NIF","NO","NOI","NOP","NU","PA","PE","PER","PHA","PHE","PI","PIN","PO","QUI","RA","RAC","RE","REN","RES","RI","RIA","RIEN","RIF","RO","ROR","ROS","ROST","RU","RYTH","SA","SE","SI","SO","SU","TA","TAE","TE","TER","THAL","THO","THU","TI","TIG","TO","TU","VA","VE","VES","VI","VIT","XEL","XI","ZO"],
-  ["BEUS","CA","CENS","CEPS","CEUS","CHA","CHUS","CI","CUS","DA","DAX","DENS","DES","DI","DIS","DUS","FER","GA","GI","GUS","KEI","KI","LA","LAS","LI","LIS","LIUS","LOR","LUM","LUS","MA","MIS","MUS","NA","NEUS","NI","NII","NIS","NIUS","NUS","PIS","PUS","RA","RE","RI","RIAE","RIE","RII","RIO","RIS","RIX","RONS","RU","RUM","RUS","SA","SEUS","SI","SIS","SUS","TA","TEUS","THUS","TI","TIS","TOR","TUM","TUS","TZI","ZI"]]
+  ["BEUS","CA","CENS","CEPS","CEUS","CHA","CHUS","CI","CUS","DA","DAX","DENS","DES","DI","DIS","DUS","FER","GA","GI","GUS","KEI","KI","LA","LAS","LI","LIS","LIUS","LOR","LUM","LUS","MA","MIS","MUS","NA","NEUS","NI","NII","NIS","NIUS","NUS","PIS","PUS","RA","RE","RI","RIAE","RIE","RII","RIO","RIS","RIX","RONS","RU","RUM","RUS","SA","SEUS","SI","SIS","SUS","TA","TEUS","THUS","TI","TIS","TOR","TUM","TUS","TZI","ZI"]];
   let freq =[[27,2,4,4,2,2,2,5,2,2,3,4,2,5,3,2,2,2,3,8,3,3,2,2,7,2,3,2,2,2,6,3,2,4,5,2,5,2,3,2,2,5,5,4,2,3,2,3,2,2,9,2,2,2,7,2,2,2,2,2,5,6,2,2,2,2,2,2,2,2,2,4,2,2,2,2,3,3,2,3],
   [2,2,3,3,5,2,11,6,4,2,7,2,4,4,3,3,5,4,9,2,2,4,5,13,3,3,12,3,3,2,8,3,4,15,6,2,3,10,3,3,2,2,2,8,7,3,4,20,2,2,3,4,3,2,10,2,6,2,2,5,2,2,13,2,2,14,3,2,2,9,4,2,5,42,2,4,2,6,3,3,11,2,19,2,3,2,5,3,2,4,2,27,2,2,2,2,2,2],
   [3,3,7,7,3,2,3,2,5,2,13,7,2,3,4,2,13,2,2,2,24,18,13,17,12,4,2,5,3,19,3,2,2,3,7,3,2,5,2,6,29,3,2,2,2,3,4,4,16,2,6,12,5,5,6,2],
@@ -2628,15 +2808,47 @@ function generateSpecimen(options = {}){
   let accessionId = `FV-${prefix}-${hexHash.slice(0, 4)}`;
 
   const scaleNames = ["Minute / Granular", "Ctenoid (Comb-edged)", "Cycloid (Smooth)", "Ganoid (Rhombic enamel)"];
-  const patternNames = ["Uniform Dermal Tone", "Transverse Fasciation", "Maculated / Mottled", "Longitudinal Striae", "Punctate / Melanophores"];
-  const tailNames = ["Forked (Carangiform)", "Emarginate", "Truncate", "Rounded", "Lunate (Fast cruiser)", "Heterocercal (Primitive)"];
-  const dorsalNames = ["Continuous Spinous", "Segmented Soft-Ray"];
+  const patternNames = [
+    "Uniform Dermal Tone", 
+    "Transverse Fasciation", 
+    "Maculated / Mottled", 
+    "Longitudinal Striae", 
+    "Punctate / Melanophores",
+    "Reticulated Hex Lattice",
+    "Ocellated Eyespots (Ocelli)",
+    "Longitudinal Lateral Bands"
+  ];
+  const tailNames = [
+    "Forked (Carangiform)", 
+    "Emarginate", 
+    "Truncate", 
+    "Rounded", 
+    "Lunate (Fast cruiser)", 
+    "Pointed / Tapered",
+    "Epicercal Heterocercal (Shark)",
+    "Lyretail / Filamentous Flagtail"
+  ];
+  const dorsalNames = [
+    "Continuous Spinous", 
+    "Segmented Soft-Ray",
+    "Sailfin / Vexilliferous",
+    "Serrate Scorpaenid Spines"
+  ];
+  const bodyCurveNames = [
+    "Sinusoidal", 
+    "Arcuate / Turgid",
+    "Anguilliform / Ribbon",
+    "Disciform / Chaetodontid",
+    "Fusiform Scombrid (Torpedo)"
+  ];
 
-  let barbelsText = "";
-  if (params.has_moustache && params.has_beard) barbelsText = "Maxillary & Mental";
-  else if (params.has_moustache) barbelsText = "Maxillary only";
-  else if (params.has_beard) barbelsText = "Mental only";
-  else barbelsText = "Absent";
+  let cephalicList = [];
+  if (params.has_esca_lure) cephalicList.push("Illicium Esca Photophore");
+  if (params.has_catfish_barbels) cephalicList.push("Tactile Barbels");
+  if (params.has_moustache && params.has_beard) cephalicList.push("Maxillary & Mental");
+  else if (params.has_moustache) cephalicList.push("Maxillary only");
+  else if (params.has_beard) cephalicList.push("Mental only");
+  let barbelsText = cephalicList.length > 0 ? cephalicList.join(" + ") : "Absent";
 
   let metrics = {
     seed: seed,
@@ -2646,7 +2858,7 @@ function generateSpecimen(options = {}){
     standardLength: `${Math.round(params.body_length)} mm`,
     bodyDepth: `${Math.round(params.body_height)} mm`,
     aspectRatio: (params.body_length / params.body_height).toFixed(2),
-    curvature: `${Math.round(params.body_curve_amount * 100)}% (${params.body_curve_type === 0 ? "Sinusoidal" : "Arcuate"})`,
+    curvature: `${Math.round(params.body_curve_amount * 100)}% (${bodyCurveNames[params.body_curve_type] || "Curved"})`,
     scaleType: scaleNames[params.scale_type] || "Unspecified",
     patternType: patternNames[params.pattern_type] || "Unspecified",
     tailMorphology: tailNames[params.tail_type] || "Unspecified",

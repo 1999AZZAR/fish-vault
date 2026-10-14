@@ -767,29 +767,32 @@
 
                 let svgMarkup = '';
 
+                const plateOpts = {
+                    width: dims.w,
+                    height: dims.h,
+                    stroke: theme.stroke,
+                    strokeWidth: 1.1,
+                    margin: 10,
+                    border: true,
+                    accessionId: STATE.currentSpecimen.accessionId,
+                    hashHex: STATE.currentSpecimen.metrics.hashHex,
+                    metaColor: theme.meta || '#7A7068',
+                    metrics: STATE.currentSpecimen.metrics
+                };
+
                 if (STATE.renderMode === 'anim') {
                     // Animated SMIL SVG pen plotter simulation
                     svgMarkup = window.FishDraw.draw_svg_anim(STATE.currentSpecimen.polylines, STATE.animSpeed, {
-                        width: dims.w,
-                        height: dims.h,
-                        bg: 'transparent',
-                        stroke: theme.stroke,
-                        strokeWidth: 1.1,
-                        margin: 10,
-                        border: true
+                        ...plateOpts,
+                        bg: 'transparent'
                     });
                     DOM.replayDrawBtn.classList.remove('hidden');
                     DOM.plotSpeedIndicator.classList.remove('hidden');
                 } else {
                     // Clean static vector plate
                     svgMarkup = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
-                        width: dims.w,
-                        height: dims.h,
-                        bg: 'transparent',
-                        stroke: theme.stroke,
-                        strokeWidth: 1.1,
-                        margin: 10,
-                        border: true
+                        ...plateOpts,
+                        bg: 'transparent'
                     });
                     DOM.replayDrawBtn.classList.add('hidden');
                     DOM.plotSpeedIndicator.classList.add('hidden');
@@ -899,7 +902,11 @@
                     stroke: theme.stroke,
                     strokeWidth: 1.1,
                     margin: 12,
-                    border: true
+                    border: true,
+                    accessionId: STATE.currentSpecimen.accessionId,
+                    hashHex: STATE.currentSpecimen.metrics.hashHex,
+                    metaColor: theme.meta || '#7A7068',
+                    metrics: STATE.currentSpecimen.metrics
                 });
 
                 // Download file
@@ -933,7 +940,11 @@
                     stroke: theme.stroke,
                     strokeWidth: 1.1,
                     margin: 12,
-                    border: true
+                    border: true,
+                    accessionId: STATE.currentSpecimen.accessionId,
+                    hashHex: STATE.currentSpecimen.metrics.hashHex,
+                    metaColor: theme.meta || '#7A7068',
+                    metrics: STATE.currentSpecimen.metrics
                 });
 
                 const blob = new Blob([animSvgContent], { type: 'image/svg+xml;charset=utf-8' });
@@ -968,7 +979,11 @@
                     stroke: theme.stroke,
                     strokeWidth: 1.1,
                     margin: 12,
-                    border: true
+                    border: true,
+                    accessionId: STATE.currentSpecimen.accessionId,
+                    hashHex: STATE.currentSpecimen.metrics.hashHex,
+                    metaColor: theme.meta || '#7A7068',
+                    metrics: STATE.currentSpecimen.metrics
                 });
 
                 const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
@@ -1064,7 +1079,11 @@
                     stroke: theme.stroke,
                     strokeWidth: 1.1,
                     margin: 12,
-                    border: true
+                    border: true,
+                    accessionId: STATE.currentSpecimen.accessionId,
+                    hashHex: STATE.currentSpecimen.metrics.hashHex,
+                    metaColor: theme.meta || '#7A7068',
+                    metrics: STATE.currentSpecimen.metrics
                 });
 
                 DOM.viewerContent.innerHTML = svgMarkup;
