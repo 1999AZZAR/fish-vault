@@ -779,21 +779,80 @@ function poissondisk(W, H, r, samples) {
 }
 
 
+function renderFishArchivalDecorations(width, height, stroke, metaColor, margin) {
+  var minDim = Math.min(width, height);
+  var borderGap = Math.max(3, Math.round(minDim * 0.007));
+  var outerLineWidth = Math.max(1.0, (minDim / 600) * 1.0);
+  var innerLineWidth = Math.max(0.5, (minDim / 600) * 0.5);
+
+  // 1. Morphometric Scale Bar (Bottom-Left)
+  var scaleFactor = minDim / 600;
+  var barW = Math.round(64 * scaleFactor);
+  var barH = Math.max(3, Math.round(3.5 * scaleFactor));
+  var segW = barW / 4;
+  var tickH = Math.max(2, Math.round(3 * scaleFactor));
+  var scaleFontSize = Math.max(7, Math.round(8.5 * scaleFactor));
+  var captionFontSize = Math.max(6, Math.round(6.8 * scaleFactor));
+  var scaleBarX = margin + borderGap + Math.round(minDim * 0.02);
+  var scaleBarY = height - margin - borderGap - barH - captionFontSize - Math.max(4, Math.round(minDim * 0.012));
+
+  // 2. Archival Vermilion Seal Chop (Bottom-Right · 水族典藏)
+  var sealSize = Math.max(26, Math.round(minDim * 0.062));
+  var sealX = width - margin - borderGap - sealSize - Math.round(minDim * 0.02);
+  var sealY = height - margin - borderGap - sealSize - Math.max(4, Math.round(minDim * 0.012));
+  var sealInset = Math.max(1.5, sealSize * 0.06);
+  var sealFontSize = Math.round(sealSize * 0.36);
+
+  var lines = [
+    '  <!-- Archival Drafting Borders (Swiss-Archival Standard) -->',
+    '  <rect x="' + margin + '" y="' + margin + '" width="' + (width - margin * 2) + '" height="' + (height - margin * 2) + '" fill="none" stroke="' + stroke + '" stroke-width="' + outerLineWidth.toFixed(2) + '" />',
+    '  <rect x="' + (margin + borderGap) + '" y="' + (margin + borderGap) + '" width="' + (width - (margin + borderGap) * 2) + '" height="' + (height - (margin + borderGap) * 2) + '" fill="none" stroke="' + metaColor + '" stroke-width="' + innerLineWidth.toFixed(2) + '" />',
+    '',
+    '  <!-- Ichthyological Drafting Scale Bar (50mm Morphometric Rule) -->',
+    '  <g class="drafting-scale-bar" transform="translate(' + scaleBarX + ', ' + scaleBarY + ')">',
+    '    <rect x="0" y="0" width="' + segW + '" height="' + barH + '" fill="' + stroke + '" />',
+    '    <rect x="' + segW + '" y="0" width="' + segW + '" height="' + barH + '" fill="none" stroke="' + stroke + '" stroke-width="0.75" />',
+    '    <rect x="' + (segW * 2) + '" y="0" width="' + segW + '" height="' + barH + '" fill="' + stroke + '" />',
+    '    <rect x="' + (segW * 3) + '" y="0" width="' + segW + '" height="' + barH + '" fill="none" stroke="' + stroke + '" stroke-width="0.75" />',
+    '    <rect x="0" y="0" width="' + barW + '" height="' + barH + '" fill="none" stroke="' + stroke + '" stroke-width="0.75" />',
+    '    <line x1="0" y1="' + (-tickH) + '" x2="0" y2="0" stroke="' + stroke + '" stroke-width="0.75" />',
+    '    <line x1="' + (segW * 2) + '" y1="' + (-tickH) + '" x2="' + (segW * 2) + '" y2="0" stroke="' + stroke + '" stroke-width="0.75" />',
+    '    <line x1="' + barW + '" y1="' + (-tickH) + '" x2="' + barW + '" y2="0" stroke="' + stroke + '" stroke-width="0.75" />',
+    '    <text x="0" y="' + (-tickH - 2) + '" font-family="\'JetBrains Mono\', monospace" font-size="' + scaleFontSize + '" font-weight="600" fill="' + stroke + '" text-anchor="middle">0</text>',
+    '    <text x="' + (segW * 2) + '" y="' + (-tickH - 2) + '" font-family="\'JetBrains Mono\', monospace" font-size="' + scaleFontSize + '" font-weight="600" fill="' + stroke + '" text-anchor="middle">25</text>',
+    '    <text x="' + barW + '" y="' + (-tickH - 2) + '" font-family="\'JetBrains Mono\', monospace" font-size="' + scaleFontSize + '" font-weight="600" fill="' + stroke + '" text-anchor="middle">50mm</text>',
+    '    <text x="0" y="' + (barH + captionFontSize + 2) + '" font-family="\'JetBrains Mono\', monospace" font-size="' + captionFontSize + '" font-weight="500" fill="' + metaColor + '">MORPHOMETRIC SCALE 1:1</text>',
+    '  </g>',
+    '',
+    '  <!-- Archival Vermilion Seal Chop (朱砂印章 · 水族典藏) -->',
+    '  <g class="archival-seal" transform="translate(' + sealX + ', ' + sealY + ')">',
+    '    <rect width="' + sealSize + '" height="' + sealSize + '" fill="#B83227" fill-opacity="0.06" stroke="#B83227" stroke-width="' + Math.max(1.2, sealSize * 0.05).toFixed(2) + '" />',
+    '    <rect x="' + sealInset + '" y="' + sealInset + '" width="' + (sealSize - sealInset * 2) + '" height="' + (sealSize - sealInset * 2) + '" fill="none" stroke="#B83227" stroke-width="' + Math.max(0.5, sealSize * 0.02).toFixed(2) + '" />',
+    '    <line x1="' + (sealSize / 2) + '" y1="' + sealInset + '" x2="' + (sealSize / 2) + '" y2="' + (sealSize - sealInset) + '" stroke="#B83227" stroke-opacity="0.35" stroke-width="0.5" />',
+    '    <line x1="' + sealInset + '" y1="' + (sealSize / 2) + '" x2="' + (sealSize - sealInset) + '" y2="' + (sealSize / 2) + '" stroke="#B83227" stroke-opacity="0.35" stroke-width="0.5" />',
+    '    <text x="' + (sealSize * 0.28) + '" y="' + (sealSize * 0.38) + '" font-family="\'Noto Serif SC\', \'Source Han Serif\', \'Songti SC\', \'SimSun\', serif" font-weight="bold" font-size="' + sealFontSize + '" fill="#B83227" text-anchor="middle">水</text>',
+    '    <text x="' + (sealSize * 0.72) + '" y="' + (sealSize * 0.38) + '" font-family="\'Noto Serif SC\', \'Source Han Serif\', \'Songti SC\', \'SimSun\', serif" font-weight="bold" font-size="' + sealFontSize + '" fill="#B83227" text-anchor="middle">典</text>',
+    '    <text x="' + (sealSize * 0.28) + '" y="' + (sealSize * 0.80) + '" font-family="\'Noto Serif SC\', \'Source Han Serif\', \'Songti SC\', \'SimSun\', serif" font-weight="bold" font-size="' + sealFontSize + '" fill="#B83227" text-anchor="middle">族</text>',
+    '    <text x="' + (sealSize * 0.72) + '" y="' + (sealSize * 0.80) + '" font-family="\'Noto Serif SC\', \'Source Han Serif\', \'Songti SC\', \'SimSun\', serif" font-weight="bold" font-size="' + sealFontSize + '" fill="#B83227" text-anchor="middle">藏</text>',
+    '  </g>'
+  ];
+  return lines.join('\n') + '\n';
+}
+
 function draw_svg(polylines, options = {}){
   let width = options.width || 520;
   let height = options.height || 320;
   let bg = options.bg !== undefined ? options.bg : "floralwhite";
   let stroke = options.stroke || "black";
   let strokeWidth = options.strokeWidth || 1;
-  let margin = options.margin !== undefined ? options.margin : 10;
+  let metaColor = options.metaColor || '#7A7068';
+  let minDim = Math.min(width, height);
+  let margin = options.margin !== undefined ? options.margin : Math.round(minDim * 0.024);
   let border = options.border !== false;
 
   let o = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">\n`;
   if (bg && bg !== "none" && bg !== "transparent"){
     o += `  <rect x="0" y="0" width="${width}" height="${height}" fill="${bg}"/>\n`;
-  }
-  if (border){
-    o += `  <rect x="${margin}" y="${margin}" width="${width - margin * 2}" height="${height - margin * 2}" stroke="${stroke}" stroke-width="${strokeWidth}" fill="none"/>\n`;
   }
 
   // Draw procedural polylines
@@ -808,6 +867,10 @@ function draw_svg(polylines, options = {}){
   }
   o += `\n"/>\n`;
 
+  if (border){
+    o += renderFishArchivalDecorations(width, height, stroke, metaColor, margin);
+  }
+
   o += `</svg>`;
   return o;
 }
@@ -818,15 +881,14 @@ function draw_svg_anim(polylines, speed = 0.005, options = {}){
   let bg = options.bg !== undefined ? options.bg : "floralwhite";
   let stroke = options.stroke || "black";
   let strokeWidth = options.strokeWidth || 1;
-  let margin = options.margin !== undefined ? options.margin : 10;
+  let metaColor = options.metaColor || '#7A7068';
+  let minDim = Math.min(width, height);
+  let margin = options.margin !== undefined ? options.margin : Math.round(minDim * 0.024);
   let border = options.border !== false;
 
   let o = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">\n`;
   if (bg && bg !== "none" && bg !== "transparent"){
     o += `  <rect x="0" y="0" width="${width}" height="${height}" fill="${bg}"/>\n`;
-  }
-  if (border){
-    o += `  <rect x="${margin}" y="${margin}" width="${width - margin * 2}" height="${height - margin * 2}" stroke="${stroke}" stroke-width="${strokeWidth}" fill="none"/>\n`;
   }
 
   let lengths = [];
@@ -857,6 +919,10 @@ function draw_svg_anim(polylines, speed = 0.005, options = {}){
     o += `">\n`;
     o += `    <animate id="a${i}" attributeName="stroke-dashoffset" fill="freeze" from="${l.toFixed(2)}" to="0" dur="${t.toFixed(3)}s" begin="${beginTime}s" />\n`;
     o += `  </path>\n`;
+  }
+
+  if (border){
+    o += renderFishArchivalDecorations(width, height, stroke, metaColor, margin);
   }
 
   o += `</svg>`;
