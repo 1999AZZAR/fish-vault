@@ -808,23 +808,6 @@ function draw_svg(polylines, options = {}){
   }
   o += `\n"/>\n`;
 
-  // Print Accession ID & PTR Metadata directly on the plate (Matching Geometry Vault)
-  let accessionId = options.accessionId || (options.metrics && options.metrics.accessionId) || (options.specimen && options.specimen.accessionId) || "";
-  let hashHex = options.hashHex || (options.metrics && options.metrics.hashHex) || (options.specimen && options.specimen.metrics && options.specimen.metrics.hashHex) || "";
-  let metaColor = options.metaColor || options.stroke || "#7A7068";
-
-  if (accessionId || hashHex) {
-    let fontSize = Math.max(7.5, Math.min(10, Math.round(Math.min(width, height) * 0.018)));
-    o += `  <g id="archival-plate-stamps" font-family="'JetBrains Mono', monospace" font-size="${fontSize}" letter-spacing="0.08em" fill="${metaColor}">\n`;
-    if (accessionId) {
-      o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId}</text>\n`;
-    }
-    if (hashHex) {
-      o += `    <text x="${width - margin - 6}" y="${margin + 13}" text-anchor="end">PTR:${hashHex}</text>\n`;
-    }
-    o += `  </g>\n`;
-  }
-
   o += `</svg>`;
   return o;
 }
@@ -874,23 +857,6 @@ function draw_svg_anim(polylines, speed = 0.005, options = {}){
     o += `">\n`;
     o += `    <animate id="a${i}" attributeName="stroke-dashoffset" fill="freeze" from="${l.toFixed(2)}" to="0" dur="${t.toFixed(3)}s" begin="${beginTime}s" />\n`;
     o += `  </path>\n`;
-  }
-
-  // Print Accession ID & PTR Metadata on animated plate as well
-  let accessionId = options.accessionId || (options.metrics && options.metrics.accessionId) || (options.specimen && options.specimen.accessionId) || "";
-  let hashHex = options.hashHex || (options.metrics && options.metrics.hashHex) || (options.specimen && options.specimen.metrics && options.specimen.metrics.hashHex) || "";
-  let metaColor = options.metaColor || options.stroke || "#7A7068";
-
-  if (accessionId || hashHex) {
-    let fontSize = Math.max(7.5, Math.min(10, Math.round(Math.min(width, height) * 0.018)));
-    o += `  <g id="archival-plate-stamps" font-family="'JetBrains Mono', monospace" font-size="${fontSize}" letter-spacing="0.08em" fill="${metaColor}">\n`;
-    if (accessionId) {
-      o += `    <text x="${margin + 6}" y="${height - margin - 7}">ID:${accessionId}</text>\n`;
-    }
-    if (hashHex) {
-      o += `    <text x="${width - margin - 6}" y="${margin + 13}" text-anchor="end">PTR:${hashHex}</text>\n`;
-    }
-    o += `  </g>\n`;
   }
 
   o += `</svg>`;
