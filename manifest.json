@@ -1,0 +1,30 @@
+{
+  "name": "Fish Vault: Archival Ichthyology",
+  "short_name": "FishVault",
+  "description": "Procedural ichthyological specimen archive and field plate synthesis engine.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8E0D0",
+  "theme_color": "#8B1A1A",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
+}

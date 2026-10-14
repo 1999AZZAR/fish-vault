@@ -1,0 +1,13 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" fill="#E8E0D0"/>
+  <rect x="24" y="24" width="144" height="144" stroke="#8B1A1A" stroke-width="2"/>
+  <path d="M96 24V168" stroke="#8B1A1A" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
+  <path d="M24 96H168" stroke="#8B1A1A" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
+  <!-- Minimalist fish silhouette linework -->
+  <path d="M40 96 C56 68 116 68 144 96 C116 124 56 124 40 96 Z" stroke="#2A2520" stroke-width="2.5" fill="none"/>
+  <path d="M144 96 L164 76 L164 116 Z" stroke="#2A2520" stroke-width="2.5" fill="#8B1A1A" fill-opacity="0.15"/>
+  <circle cx="64" cy="92" r="3.5" fill="#8B1A1A"/>
+  <path d="M85 78 C95 84 100 92 100 96 C100 100 95 108 85 114" stroke="#7A7068" stroke-width="1.5" stroke-dasharray="2 3"/>
+  <!-- Archival corner registration marks -->
+  <path d="M20 28H28 M24 20V28 M172 28H164 M168 20V28 M20 164H28 M24 172V164 M172 164H164 M168 172V164" stroke="#7A7068" stroke-width="1"/>
+</svg>

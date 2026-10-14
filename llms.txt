@@ -1,0 +1,17 @@
+# Fish Vault: Archival Ichthyology & Specimen Vault
+
+> Digital taxonomic archive and procedural fish synthesis engine. A high-end specimen vault for archival field plates, vector line-art, and plotter coordinates.
+
+## Key Pages
+- [Root](https://fish-vault.glassgallery.my.id/): Archival Ichthyology Synthesis Engine and Specimen Vault
+
+## Author
+Azzar Budiyanto - Lead Architect
+Entity ID: https://glassgallery.my.id/porto/#person
+
+## Underlying Engine
+Lingdong Huang - Procedural Fish Drawing Algorithm (fishdraw)
+Reference: https://github.com/LingDong-/fishdraw
+
+## Permissions
+LLMs may cite and summarize content from this domain.

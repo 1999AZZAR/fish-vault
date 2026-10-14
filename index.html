@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fish Vault: Archival Ichthyology & Procedural Specimen Synthesis Engine. Generates deterministic biological field plates, vector line-art, and plotter coordinates.">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://fish-vault.glassgallery.my.id/">
+    
+    <!-- Favicons & PWA -->
+    <link rel="icon" type="image/svg+xml" href="/icon-192.svg">
+    <link rel="apple-touch-icon" href="/icon-192.svg">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#8B1A1A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <title>Fish Vault: Archival Ichthyology & Procedural Specimen Vault</title>
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://glassgallery.my.id/porto/#person",
+          "name": "Azzar Budiyanto",
+          "jobTitle": "Lead Architect",
+          "sameAs": [
+            "https://github.com/Mema",
+            "https://glassgallery.my.id/porto/"
+          ]
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://fish-vault.glassgallery.my.id/#app",
+          "name": "Fish Vault",
+          "url": "https://fish-vault.glassgallery.my.id/",
+          "description": "Procedural ichthyological specimen archive and field plate synthesis engine based on Lingdong Huang's fishdraw algorithm.",
+          "applicationCategory": "DesignApplication",
+          "operatingSystem": "All",
+          "author": {
+            "@id": "https://glassgallery.my.id/porto/#person"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is Fish Vault?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Fish Vault is a digital synthesis engine and taxonomic archival repository designed for technical minimalism and structural honesty. It facilitates the procedural generation, visualization, and preservation of ichthyological specimens."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does procedural fish generation work?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The engine uses Lingdong Huang's fishdraw algorithm to deterministically synthesize fish anatomy, spines, rays, scales, and binomial nomenclature based on a seed string or narrative sequence."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I export plotter-ready vector paths?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Fish Vault supports clean SVG, SMIL animated SVG, high-resolution PNG with archival paper grain, and raw polyline CSV coordinates ready for AxiDraw and CNC pen plotters."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --archival-bg: #E8E0D0;
+            --archival-fg: #2A2520;
+            --archival-surface: #EFE9DC;
+            --archival-accent: #8B1A1A;
+            --archival-muted: #DDD5C5;
+            --archival-meta: #7A7068;
+            --grid-color: rgba(191, 182, 166, 0.25);
+        }
+
+        body[data-theme="cyanotype"] {
+            --archival-bg: #1A2634;
+            --archival-fg: #E6EEF8;
+            --archival-surface: #223244;
+            --archival-accent: #60A5FA;
+            --archival-muted: #334960;
+            --archival-meta: #94A3B8;
+            --grid-color: rgba(96, 165, 250, 0.12);
+        }
+
+        body[data-theme="challenger"] {
+            --archival-bg: #0B1120;
+            --archival-fg: #F1F5F9;
+            --archival-surface: #131E32;
+            --archival-accent: #F59E0B;
+            --archival-muted: #1E293B;
+            --archival-meta: #94A3B8;
+            --grid-color: rgba(245, 158, 11, 0.1);
+        }
+
+        body[data-theme="vellum"] {
+            --archival-bg: #F4F4F5;
+            --archival-fg: #18181B;
+            --archival-surface: #FFFFFF;
+            --archival-accent: #2563EB;
+            --archival-muted: #E4E4E7;
+            --archival-meta: #71717A;
+            --grid-color: rgba(37, 99, 235, 0.1);
+        }
+
+        ::selection { background: var(--archival-accent); color: var(--archival-surface); }
+
+        body { 
+            background-color: var(--archival-bg); 
+            background-image: 
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: var(--archival-fg); 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .noise-layer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.045;
+            mix-blend-mode: multiply;
+        }
+
+        .font-tech { 
+            font-family: 'JetBrains Mono', monospace; 
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .surface-card { 
+            background: var(--archival-surface); 
+            border: 1px solid var(--archival-muted); 
+            box-shadow: 0 4px 24px -12px rgba(0, 0, 0, 0.08);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        input {
+            background: var(--archival-bg);
+            border: 1px solid var(--archival-muted);
+            color: var(--archival-fg);
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        input:focus { 
+            outline: none; 
+            border-color: var(--archival-accent); 
+        }
+
+        .ratio-btn {
+            border: 1px solid var(--archival-muted);
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .ratio-btn:hover { 
+            border-color: var(--archival-accent); 
+            color: var(--archival-accent); 
+        }
+        .ratio-btn[data-active="true"] {
+            background: var(--archival-accent);
+            color: #FFFFFF;
+            border-color: var(--archival-accent);
+        }
+
+        /* Custom Cursor */
+        @media (pointer: fine) {
+            body:not([data-mode="embed"]) *:not(#fullscreen-btn):not(#fullscreen-btn *) { cursor: none !important; }
+            .custom-cursor, .custom-cursor-trail {
+                position: fixed;
+                top: 0; left: 0;
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9999;
+                transform: translate3d(calc(var(--x, -100px) - 50%), calc(var(--y, -100px) - 50%), 0) scale(var(--scale, 1));
+            }
+            .custom-cursor {
+                width: 6px; height: 6px;
+                background-color: var(--archival-accent);
+                transition: transform 0.08s cubic-bezier(0.25, 1, 0.5, 1);
+            }
+            .custom-cursor-trail {
+                width: 28px; height: 28px;
+                border: 1px solid var(--archival-accent);
+                z-index: 9998;
+                transition: transform 0.04s linear, background-color 0.2s, border-color 0.2s;
+            }
+            .custom-cursor.hover { --scale: 1.5; }
+            .custom-cursor-trail.hover { --scale: 1.5; background-color: rgba(139, 26, 26, 0.12); }
+        }
+        @media print {
+            .custom-cursor, .custom-cursor-trail { display: none !important; }
+        }
+
+        /* Fullscreen Viewer */
+        #fullscreen-btn {
+            opacity: 0.85;
+            transition: opacity 0.2s ease, border-color 0.2s ease;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            z-index: 30;
+        }
+        .group:hover #fullscreen-btn {
+            opacity: 1;
+        }
+
+        #fullscreen-viewer.active {
+            display: flex;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #viewer-content svg {
+            max-width: 95%;
+            max-height: 95%;
+            width: auto;
+            height: auto;
+        }
+
+        /* Embed Mode */
+        body[data-mode="embed"] { 
+            background: transparent !important;
+            padding: 0 !important; 
+            margin: 0 !important;
+            overflow: hidden !important;
+        }
+        body[data-mode="embed"] .noise-layer,
+        body[data-mode="embed"] #fullscreen-viewer,
+        body[data-mode="embed"] #fullscreen-btn,
+        body[data-mode="embed"] section,
+        body[data-mode="embed"] footer,
+        body[data-mode="embed"] header {
+            display: none !important;
+        }
+        body[data-mode="embed"] main { 
+            max-width: none !important; 
+            width: 100vw !important; 
+            height: 100vh !important; 
+            margin: 0 !important; 
+            padding: 0 !important;
+            display: flex !important;
+            grid-template-columns: none !important;
+        }
+        body[data-mode="embed"] .specimen-container {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            width: 100% !important;
+            height: 100% !important;
+            padding: 0 !important;
+        }
+
+        /* Registration Mark styling */
+        .crop-mark {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-color: var(--archival-meta);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .crop-tl { top: 12px; left: 12px; border-top: 1.5px solid; border-left: 1.5px solid; }
+        .crop-tr { top: 12px; right: 12px; border-top: 1.5px solid; border-right: 1.5px solid; }
+        .crop-bl { bottom: 12px; left: 12px; border-bottom: 1.5px solid; border-left: 1.5px solid; }
+        .crop-br { bottom: 12px; right: 12px; border-bottom: 1.5px solid; border-right: 1.5px solid; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-4 sm:p-8" data-theme="linnaean">
+
+    <!-- Tactile Cursor -->
+    <div class="custom-cursor" aria-hidden="true"></div>
+    <div class="custom-cursor-trail" aria-hidden="true"></div>
+
+    <!-- Paper Grain Noise -->
+    <svg class="noise-layer" aria-hidden="true">
+        <filter id="fractalNoise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" stitchTiles="stitch"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#fractalNoise)"/>
+    </svg>
+
+    <!-- Fullscreen Viewer Modal -->
+    <div id="fullscreen-viewer" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-8">
+        <div class="absolute inset-0 bg-[#0B1120] bg-opacity-90 backdrop-blur-md"></div>
+        <div class="relative w-full h-full max-w-7xl max-h-[92vh] flex flex-col z-10">
+            <div class="flex justify-between items-center mb-3 px-2">
+                <div class="flex items-center gap-3">
+                    <span id="viewer-title" class="font-tech text-xs text-[#E8E0D0] font-semibold tracking-wider">ICHTHYOLOGICAL SPECIMEN PLATE</span>
+                    <span id="viewer-seq" class="font-tech text-[10px] text-[#94A3B8]"></span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="viewer-download-svg" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-1.5 border border-[#475569] hover:border-[#8B1A1A] bg-[#1E293B]">
+                        <i class="fa-solid fa-code"></i> SVG
+                    </button>
+                    <button id="viewer-download-png" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-1.5 border border-[#475569] hover:border-[#8B1A1A] bg-[#1E293B]">
+                        <i class="fa-solid fa-download"></i> PNG
+                    </button>
+                    <button id="viewer-close" class="font-tech text-[10px] text-[#E8E0D0] hover:text-[#8B1A1A] transition-all flex items-center gap-2 px-3 py-1.5 border border-[#475569] hover:border-[#8B1A1A] bg-[#1E293B]">
+                        <i class="fa-solid fa-times"></i> CLOSE
+                    </button>
+                </div>
+            </div>
+            <div id="viewer-content" class="flex-1 flex items-center justify-center bg-[var(--archival-surface)] rounded-sm border border-[#475569] overflow-hidden p-6 relative">
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="max-w-[82rem] w-full space-y-6 relative z-10 grid grid-cols-1 md:grid-cols-5 gap-6">
+        
+        <!-- Left: Specimen Plate Viewport (Col 1-3) -->
+        <div class="specimen-container surface-card w-full aspect-square md:aspect-auto md:h-full md:col-span-3 rounded-sm p-6 sm:p-8 overflow-hidden relative group flex flex-col justify-between">
+            
+            <!-- Archival Corner Registration Marks -->
+            <div class="crop-mark crop-tl"></div>
+            <div class="crop-mark crop-tr"></div>
+            <div class="crop-mark crop-bl"></div>
+            <div class="crop-mark crop-br"></div>
+
+            <!-- Viewport Top Controls -->
+            <div class="flex items-center justify-between w-full z-20 pb-2 border-b border-[var(--archival-muted)]">
+                <div class="flex items-center gap-3">
+                    <span class="font-tech text-[10px] text-[var(--archival-meta)] flex items-center gap-1.5">
+                        <i class="fa-solid fa-compass-drafting text-[var(--archival-accent)]"></i>
+                        <span>PLATE // ARCHIVAL SYNTHESIS</span>
+                    </span>
+                    <span id="canvas-dim-badge" class="font-tech text-[9px] px-1.5 py-0.5 border border-[var(--archival-muted)] text-[var(--archival-meta)]">600×400</span>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <!-- Mode Toggle: Static vs Plotter Simulation -->
+                    <div class="flex border border-[var(--archival-muted)] p-0.5 rounded-sm bg-[var(--archival-bg)]">
+                        <button id="mode-static-btn" class="font-tech text-[9px] px-2.5 py-1 text-[var(--archival-fg)] bg-[var(--archival-surface)] font-semibold transition-all">
+                            STATIC
+                        </button>
+                        <button id="mode-anim-btn" class="font-tech text-[9px] px-2.5 py-1 text-[var(--archival-meta)] hover:text-[var(--archival-fg)] transition-all">
+                            <i class="fa-solid fa-pen-nib mr-1"></i>PLOTTER
+                        </button>
+                    </div>
+
+                    <button id="fullscreen-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] flex items-center gap-1.5 px-2.5 py-1.5 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-surface)]">
+                        <i class="fa-solid fa-expand text-[9px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Specimen Vector Display Target -->
+            <div id="render-target" class="w-full flex-1 flex items-center justify-center my-4 overflow-hidden relative min-h-[320px]">
+                <div class="font-tech text-[10px] text-[var(--archival-meta)] flex items-center gap-2">
+                    <i class="fa-solid fa-circle-notch fa-spin text-[var(--archival-accent)]"></i> SYNTHESIZING SPECIMEN...
+                </div>
+            </div>
+
+            <!-- Viewport Bottom Calibration Bar -->
+            <div class="flex items-center justify-between w-full pt-2 border-t border-[var(--archival-muted)] z-20 text-[9px] font-tech text-[var(--archival-meta)]">
+                <div class="flex items-center gap-2">
+                    <span>GRID: 10MM</span>
+                    <span>•</span>
+                    <span id="plot-speed-indicator" class="hidden">PLOT: 1.0X</span>
+                    <span id="stroke-metric-line">STROKES: 0 // PTS: 0</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="replay-draw-btn" class="hidden font-tech text-[9px] text-[var(--archival-accent)] hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-right"></i> RE-PLOT
+                    </button>
+                    <span class="tracking-widest">FIG. 01 — DORSAL & LATERAL FACIES</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Control Matrix & Morphometrics (Col 4-5) -->
+        <section class="surface-card p-6 rounded-sm space-y-5 md:col-span-2 flex flex-col justify-between">
+            <div class="space-y-5">
+                
+                <!-- Panel Header -->
+                <header class="flex items-center justify-between border-b border-[var(--archival-muted)] pb-3">
+                    <h1 class="font-tech text-[11px] font-bold text-[var(--archival-fg)] flex items-center gap-2">
+                        <i class="fa-solid fa-fish text-xs text-[var(--archival-accent)]"></i>
+                        <span>FISH VAULT // ARCHIVAL ENGINE</span>
+                    </h1>
+                    <span class="font-tech text-[9px] px-2 py-0.5 bg-[var(--archival-bg)] border border-[var(--archival-muted)] text-[var(--archival-meta)] font-semibold">
+                        V1.0-SYNTH
+                    </span>
+                </header>
+
+                <!-- 1. Aspect Ratio Matrix -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="font-tech text-[9px] text-[var(--archival-meta)] font-semibold">01 // ASPECT_RATIO_MATRIX</label>
+                        <span class="font-tech text-[8px] text-[var(--archival-meta)]">TARGET VIEW</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5" id="format-matrix">
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="9" data-h="16">9:16</button>
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="2" data-h="3">2:3</button>
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="3" data-h="4">3:4</button>
+                        
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="4" data-h="5">4:5</button>
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="1" data-h="1">1:1</button>
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="5" data-h="4">5:4</button>
+                        
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="4" data-h="3">4:3</button>
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="3" data-h="2" data-active="true">3:2</button>
+                        <button class="ratio-btn py-1.5 text-[9px] font-tech font-semibold bg-[var(--archival-bg)]" data-w="16" data-h="9">16:9</button>
+                    </div>
+                </div>
+
+                <!-- 2. Seed & Taxon Input with Random Dice -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="font-tech text-[9px] text-[var(--archival-meta)] font-semibold">02 // TAXON_SEQUENCE_SEED</label>
+                        <button id="random-btn" class="font-tech text-[9px] text-[var(--archival-accent)] hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-dice"></i> [ RANDOM TAXON ]
+                        </button>
+                    </div>
+                    <div class="relative group">
+                        <i class="fa-solid fa-dna absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--archival-meta)] group-focus-within:text-[var(--archival-accent)] transition-colors text-xs"></i>
+                        <input type="text" id="seed-input" placeholder="Inject narrative sequence or binomen..." 
+                               class="w-full pl-9 pr-4 py-2.5 text-xs font-mono font-medium rounded-sm"
+                               autocomplete="off" maxlength="128" spellcheck="false" value="Salmo salar">
+                    </div>
+                </div>
+
+                <!-- 3. Accession ID Recovery & Theme Preset Selector -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="space-y-1.5">
+                        <label class="font-tech text-[8px] text-[var(--archival-meta)]">RECOVER FROM ID</label>
+                        <div class="relative group">
+                            <i class="fa-solid fa-fingerprint absolute left-3 top-1/2 -translate-y-1/2 text-[var(--archival-meta)] text-[10px]"></i>
+                            <input type="text" id="id-load-input" placeholder="e.g. FV-25-9AC9" 
+                                   class="w-full pl-7 pr-3 py-2 text-[10px] font-mono rounded-sm"
+                                   autocomplete="off" maxlength="16" spellcheck="false">
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="font-tech text-[8px] text-[var(--archival-meta)]">ARCHIVAL THEME</label>
+                        <select id="theme-select" class="w-full py-2 px-3 text-[10px] font-mono bg-[var(--archival-bg)] border border-[var(--archival-muted)] text-[var(--archival-fg)] rounded-sm focus:border-[var(--archival-accent)] outline-none">
+                            <option value="linnaean">Linnaean Sepia (Bone/Rag)</option>
+                            <option value="cyanotype">Prussian Cyanotype</option>
+                            <option value="challenger">Challenger Deep Abyssal</option>
+                            <option value="vellum">Drafting Vellum & Blue</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 4. Morphological Telemetry Matrix -->
+                <div class="space-y-2 border border-[var(--archival-muted)] bg-[var(--archival-bg)] p-3 rounded-sm">
+                    <div class="flex justify-between items-center border-b border-[var(--archival-muted)] pb-1.5">
+                        <span class="font-tech text-[9px] font-bold text-[var(--archival-fg)]">03 // MORPHOMETRIC_TELEMETRY</span>
+                        <span id="accession-badge" class="font-tech text-[8px] text-[var(--archival-accent)] font-semibold">FV-00-0000</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[9px] font-tech">
+                        <div>
+                            <span class="text-[var(--archival-meta)] block text-[8px]">STANDARD LENGTH</span>
+                            <span id="tel-length" class="text-[var(--archival-fg)] font-semibold">320 mm</span>
+                        </div>
+                        <div>
+                            <span class="text-[var(--archival-meta)] block text-[8px]">BODY DEPTH / ASPECT</span>
+                            <span id="tel-depth" class="text-[var(--archival-fg)] font-semibold">95 mm (3.37)</span>
+                        </div>
+                        <div>
+                            <span class="text-[var(--archival-meta)] block text-[8px]">CURVATURE DYNAMICS</span>
+                            <span id="tel-curvature" class="text-[var(--archival-fg)] font-semibold">85% Sinusoidal</span>
+                        </div>
+                        <div>
+                            <span class="text-[var(--archival-meta)] block text-[8px]">CAUDAL FIN TYPE</span>
+                            <span id="tel-tail" class="text-[var(--archival-fg)] font-semibold">Forked</span>
+                        </div>
+                        <div>
+                            <span class="text-[var(--archival-meta)] block text-[8px]">SCALE MORPHOLOGY</span>
+                            <span id="tel-scale" class="text-[var(--archival-fg)] font-semibold">Ctenoid (Comb)</span>
+                        </div>
+                        <div>
+                            <span class="text-[var(--archival-meta)] block text-[8px]">DERMAL PATTERN</span>
+                            <span id="tel-pattern" class="text-[var(--archival-fg)] font-semibold">Maculated</span>
+                        </div>
+                        <div>
+                            <span class="text-[var(--archival-meta)] block text-[8px]">DENTITION / BARBELS</span>
+                            <span id="tel-dentition" class="text-[var(--archival-fg)] font-semibold">Dentate / None</span>
+                        </div>
+                        <div>
+                            <span class="text-[var(--archival-meta)] block text-[8px]">HASH IDENTIFIER</span>
+                            <span id="tel-hash" class="text-[var(--archival-fg)] font-semibold">0x00000000</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Export & Action Protocols Footer -->
+            <footer class="space-y-2.5 pt-4 border-t border-[var(--archival-muted)]">
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="svg-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
+                        <i class="fa-solid fa-code text-[9px]"></i> [ SVG ]
+                    </button>
+                    <button id="anim-svg-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
+                        <i class="fa-solid fa-film text-[9px]"></i> [ ANIM SVG ]
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="png-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
+                        <i class="fa-solid fa-download text-[9px]"></i> [ PNG 300DPI ]
+                    </button>
+                    <button id="plotter-btn" class="font-tech text-[10px] text-[var(--archival-fg)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-3 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] font-semibold">
+                        <i class="fa-solid fa-bezier-curve text-[9px]"></i> [ PLOTTER CSV ]
+                    </button>
+                </div>
+
+                <button id="embed-btn" class="font-tech text-[10px] text-[var(--archival-meta)] hover:text-[var(--archival-accent)] transition-all flex items-center justify-center gap-1.5 px-4 py-2 border border-[var(--archival-muted)] hover:border-[var(--archival-accent)] bg-[var(--archival-bg)] w-full">
+                    <i class="fa-solid fa-share-nodes text-[9px]"></i> [ GENERATE EMBED PROTOCOL ]
+                </button>
+            </footer>
+
+        </section>
+
+        <!-- Bottom: Archival Knowledge & Field Guide Section -->
+        <section class="md:col-span-5 surface-card p-6 sm:p-8 rounded-sm space-y-6 mt-4">
+            <header class="border-b border-[var(--archival-muted)] pb-3 flex justify-between items-center">
+                <h2 class="font-tech text-xs font-bold text-[var(--archival-accent)] flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark text-xs"></i>
+                    <span>FIELD MONOGRAPH // ICHTHYOLOGICAL PROCEDURAL SYNTHESIS</span>
+                </h2>
+                <span class="font-tech text-[9px] text-[var(--archival-meta)]">SYSTEM: SWISS-ARCHIVAL PISCES</span>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-[var(--archival-fg)] leading-relaxed">
+                <div class="space-y-2">
+                    <h3 class="font-tech text-[10px] font-semibold text-[var(--archival-fg)] border-b border-[var(--archival-muted)] pb-1">
+                        01. TAXONOMIC SYNTHESIS
+                    </h3>
+                    <p class="text-[var(--archival-meta)]">
+                        Fish Vault transforms narrative sequences into anatomical parameters via cryptographic PRNG hashing. Each seed deterministically defines body curvature, spine density, meristic scale patterns, and a pseudo-Latin binomen generated using historical Linnaean morphemes.
+                    </p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-tech text-[10px] font-semibold text-[var(--archival-fg)] border-b border-[var(--archival-muted)] pb-1">
+                        02. PLOTTER-CENTRIC GEOMETRY
+                    </h3>
+                    <p class="text-[var(--archival-meta)]">
+                        Unlike raster generators, all specimens are synthesized as ordered polyline vector strokes. This ensures zero fidelity loss at any resolution and direct compatibility with CNC pen plotters (e.g. AxiDraw), laser cutters, and vector archival repositories.
+                    </p>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-tech text-[10px] font-semibold text-[var(--archival-fg)] border-b border-[var(--archival-muted)] pb-1">
+                        03. EMBED & ARCHIVAL PRESERVATION
+                    </h3>
+                    <p class="text-[var(--archival-meta)]">
+                        Specimens can be permanently embedded into digital publications or field journals using the <code>?mode=embed</code> URL parameter. URL state syncing ensures full reproducibility and deep-linking across research environments.
+                    </p>
+                </div>
+            </div>
+
+            <div class="border-t border-[var(--archival-muted)] pt-4 flex flex-col sm:flex-row justify-between items-center text-[9px] font-tech text-[var(--archival-meta)] gap-2">
+                <div>
+                    CURATED BY <a href="https://glassgallery.my.id/porto/" target="_blank" class="text-[var(--archival-accent)] hover:underline font-semibold">AZZAR BUDIYANTO</a> // ALGORITHM BY <a href="https://github.com/LingDong-/fishdraw" target="_blank" class="hover:underline">LINGDONG HUANG</a>
+                </div>
+                <div>
+                    ZERO-DEPENDENCY VANILLA ENGINE // DETERMINISTIC REPRODUCIBILITY 100%
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Core Engine Scripts -->
+    <script src="js/fishdraw.js"></script>
+    <script>
+        (function() {
+            // Configuration & State
+            const STATE = {
+                currentSeed: 'Salmo salar',
+                currentSpecimen: null,
+                currentRatio: { w: 3, h: 2 },
+                currentTheme: 'linnaean',
+                renderMode: 'static', // 'static' or 'anim'
+                animSpeed: 0.005,
+                paletteConfig: {
+                    linnaean: { stroke: '#2A2520', accent: '#8B1A1A', bg: '#EFE9DC', meta: '#7A7068' },
+                    cyanotype: { stroke: '#E6EEF8', accent: '#60A5FA', bg: '#223244', meta: '#94A3B8' },
+                    challenger: { stroke: '#F1F5F9', accent: '#F59E0B', bg: '#131E32', meta: '#94A3B8' },
+                    vellum: { stroke: '#18181B', accent: '#2563EB', bg: '#FFFFFF', meta: '#71717A' }
+                }
+            };
+
+            // DOM Elements
+            const DOM = {
+                target: document.getElementById('render-target'),
+                seedInput: document.getElementById('seed-input'),
+                idLoadInput: document.getElementById('id-load-input'),
+                themeSelect: document.getElementById('theme-select'),
+                randomBtn: document.getElementById('random-btn'),
+                formatMatrix: document.getElementById('format-matrix'),
+                ratioBtns: document.querySelectorAll('.ratio-btn'),
+                modeStaticBtn: document.getElementById('mode-static-btn'),
+                modeAnimBtn: document.getElementById('mode-anim-btn'),
+                replayDrawBtn: document.getElementById('replay-draw-btn'),
+                plotSpeedIndicator: document.getElementById('plot-speed-indicator'),
+                canvasDimBadge: document.getElementById('canvas-dim-badge'),
+                strokeMetricLine: document.getElementById('stroke-metric-line'),
+                accessionBadge: document.getElementById('accession-badge'),
+                fullscreenBtn: document.getElementById('fullscreen-btn'),
+                fullscreenViewer: document.getElementById('fullscreen-viewer'),
+                viewerContent: document.getElementById('viewer-content'),
+                viewerClose: document.getElementById('viewer-close'),
+                viewerTitle: document.getElementById('viewer-title'),
+                viewerSeq: document.getElementById('viewer-seq'),
+                viewerDownloadSvg: document.getElementById('viewer-download-svg'),
+                viewerDownloadPng: document.getElementById('viewer-download-png'),
+                svgBtn: document.getElementById('svg-btn'),
+                animSvgBtn: document.getElementById('anim-svg-btn'),
+                pngBtn: document.getElementById('png-btn'),
+                plotterBtn: document.getElementById('plotter-btn'),
+                embedBtn: document.getElementById('embed-btn'),
+                // Telemetry
+                telLength: document.getElementById('tel-length'),
+                telDepth: document.getElementById('tel-depth'),
+                telCurvature: document.getElementById('tel-curvature'),
+                telTail: document.getElementById('tel-tail'),
+                telScale: document.getElementById('tel-scale'),
+                telPattern: document.getElementById('tel-pattern'),
+                telDentition: document.getElementById('tel-dentition'),
+                telHash: document.getElementById('tel-hash'),
+                // Cursor
+                cursor: document.querySelector('.custom-cursor'),
+                cursorTrail: document.querySelector('.custom-cursor-trail')
+            };
+
+            // Custom Hardware-Accelerated Cursor Logic
+            if (DOM.cursor && DOM.cursorTrail) {
+                let mouseX = -100, mouseY = -100;
+                let trailX = -100, trailY = -100;
+
+                window.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                    DOM.cursor.style.setProperty('--x', `${mouseX}px`);
+                    DOM.cursor.style.setProperty('--y', `${mouseY}px`);
+                });
+
+                function renderCursorTrail() {
+                    trailX += (mouseX - trailX) * 0.25;
+                    trailY += (mouseY - trailY) * 0.25;
+                    DOM.cursorTrail.style.setProperty('--x', `${trailX}px`);
+                    DOM.cursorTrail.style.setProperty('--y', `${trailY}px`);
+                    requestAnimationFrame(renderCursorTrail);
+                }
+                requestAnimationFrame(renderCursorTrail);
+
+                const interactiveEls = document.querySelectorAll('button, input, select, a');
+                interactiveEls.forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        DOM.cursor.classList.add('hover');
+                        DOM.cursorTrail.classList.add('hover');
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        DOM.cursor.classList.remove('hover');
+                        DOM.cursorTrail.classList.remove('hover');
+                    });
+                });
+            }
+
+            // Calculate Target Canvas Dimensions based on Aspect Ratio
+            function getCanvasDimensions(ratio) {
+                const base = 600;
+                if (ratio.w >= ratio.h) {
+                    return {
+                        w: base,
+                        h: Math.round(base * (ratio.h / ratio.w))
+                    };
+                } else {
+                    return {
+                        w: Math.round(base * (ratio.w / ratio.h)),
+                        h: base
+                    };
+                }
+            }
+
+            // Synthesize Specimen using FishDraw Engine
+            function synthesizeSpecimen() {
+                const seed = DOM.seedInput.value.trim() || 'Salmo salar';
+                STATE.currentSeed = seed;
+
+                const dims = getCanvasDimensions(STATE.currentRatio);
+                DOM.canvasDimBadge.textContent = `${dims.w}×${dims.h}`;
+
+                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+
+                // Call enhanced FishDraw engine
+                const specimen = window.FishDraw.generateSpecimen({
+                    seed: seed,
+                    width: dims.w,
+                    height: dims.h,
+                    pad: Math.max(20, Math.round(Math.min(dims.w, dims.h) * 0.06)),
+                    includeLabel: true
+                });
+
+                STATE.currentSpecimen = specimen;
+
+                // Update Telemetry Panel
+                DOM.accessionBadge.textContent = specimen.accessionId;
+                DOM.telLength.textContent = specimen.metrics.standardLength;
+                DOM.telDepth.textContent = `${specimen.metrics.bodyDepth} (${specimen.metrics.aspectRatio})`;
+                DOM.telCurvature.textContent = specimen.metrics.curvature;
+                DOM.telTail.textContent = specimen.metrics.tailMorphology;
+                DOM.telScale.textContent = specimen.metrics.scaleType;
+                DOM.telPattern.textContent = specimen.metrics.patternType;
+                DOM.telDentition.textContent = `${specimen.metrics.dentition} / ${specimen.metrics.barbels}`;
+                DOM.telHash.textContent = specimen.metrics.hashHex;
+
+                DOM.strokeMetricLine.textContent = `STROKES: ${specimen.metrics.strokeCount} // PTS: ${specimen.metrics.pointCount.toLocaleString()}`;
+
+                // Render into Viewport
+                renderViewport();
+
+                // Sync URL if not in embed mode
+                if (document.body.dataset.mode !== 'embed') {
+                    const url = new URL(window.location);
+                    url.searchParams.set('seed', seed);
+                    url.searchParams.set('theme', STATE.currentTheme);
+                    url.searchParams.set('w', STATE.currentRatio.w);
+                    url.searchParams.set('h', STATE.currentRatio.h);
+                    if (STATE.renderMode !== 'static') {
+                        url.searchParams.set('mode_render', STATE.renderMode);
+                    } else {
+                        url.searchParams.delete('mode_render');
+                    }
+                    window.history.replaceState({}, '', url);
+                }
+            }
+
+            // Render Specimen SVG in Viewport according to current renderMode
+            function renderViewport() {
+                if (!STATE.currentSpecimen) return;
+
+                const dims = getCanvasDimensions(STATE.currentRatio);
+                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+
+                let svgMarkup = '';
+
+                if (STATE.renderMode === 'anim') {
+                    // Animated SMIL SVG pen plotter simulation
+                    svgMarkup = window.FishDraw.draw_svg_anim(STATE.currentSpecimen.polylines, STATE.animSpeed, {
+                        width: dims.w,
+                        height: dims.h,
+                        bg: 'transparent',
+                        stroke: theme.stroke,
+                        strokeWidth: 1.1,
+                        margin: 10,
+                        border: true
+                    });
+                    DOM.replayDrawBtn.classList.remove('hidden');
+                    DOM.plotSpeedIndicator.classList.remove('hidden');
+                } else {
+                    // Clean static vector plate
+                    svgMarkup = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
+                        width: dims.w,
+                        height: dims.h,
+                        bg: 'transparent',
+                        stroke: theme.stroke,
+                        strokeWidth: 1.1,
+                        margin: 10,
+                        border: true
+                    });
+                    DOM.replayDrawBtn.classList.add('hidden');
+                    DOM.plotSpeedIndicator.classList.add('hidden');
+                }
+
+                DOM.target.innerHTML = svgMarkup;
+                const svgEl = DOM.target.querySelector('svg');
+                if (svgEl) {
+                    svgEl.classList.add('w-full', 'h-full', 'max-h-[500px]', 'object-contain', 'transition-all');
+                }
+            }
+
+            // Aspect Ratio Matrix Selection
+            DOM.ratioBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    DOM.ratioBtns.forEach(b => b.removeAttribute('data-active'));
+                    btn.setAttribute('data-active', 'true');
+                    STATE.currentRatio = {
+                        w: parseFloat(btn.dataset.w),
+                        h: parseFloat(btn.dataset.h)
+                    };
+                    synthesizeSpecimen();
+                });
+            });
+
+            // Random Binomen Button
+            DOM.randomBtn.addEventListener('click', () => {
+                const newName = window.FishDraw.binomen();
+                DOM.seedInput.value = newName;
+                DOM.idLoadInput.value = '';
+                synthesizeSpecimen();
+            });
+
+            // Seed Input Debounce
+            let debounceTimer = null;
+            DOM.seedInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    synthesizeSpecimen();
+                }, 350);
+            });
+
+            // Recover from ID
+            DOM.idLoadInput.addEventListener('input', () => {
+                const val = DOM.idLoadInput.value.trim();
+                if (val.length >= 4) {
+                    DOM.seedInput.value = val;
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        synthesizeSpecimen();
+                    }, 400);
+                }
+            });
+
+            // Archival Theme Selector
+            DOM.themeSelect.addEventListener('change', (e) => {
+                const theme = e.target.value;
+                STATE.currentTheme = theme;
+                document.body.dataset.theme = theme;
+                renderViewport();
+            });
+
+            // Mode Toggle: Static vs Plotter
+            DOM.modeStaticBtn.addEventListener('click', () => {
+                STATE.renderMode = 'static';
+                DOM.modeStaticBtn.classList.add('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                DOM.modeStaticBtn.classList.remove('text-[var(--archival-meta)]');
+                DOM.modeAnimBtn.classList.remove('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                DOM.modeAnimBtn.classList.add('text-[var(--archival-meta)]');
+                renderViewport();
+            });
+
+            DOM.modeAnimBtn.addEventListener('click', () => {
+                STATE.renderMode = 'anim';
+                DOM.modeAnimBtn.classList.add('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                DOM.modeAnimBtn.classList.remove('text-[var(--archival-meta)]');
+                DOM.modeStaticBtn.classList.remove('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                DOM.modeStaticBtn.classList.add('text-[var(--archival-meta)]');
+                renderViewport();
+            });
+
+            // Re-Plot Button
+            DOM.replayDrawBtn.addEventListener('click', () => {
+                renderViewport();
+            });
+
+            // Button Feedback Utility
+            function buttonFeedback(buttonDom, originalHtml, successHtml) {
+                buttonDom.innerHTML = successHtml;
+                buttonDom.classList.add('border-[var(--archival-accent)]', 'text-[var(--archival-accent)]');
+                setTimeout(() => {
+                    buttonDom.innerHTML = originalHtml;
+                    buttonDom.classList.remove('border-[var(--archival-accent)]', 'text-[var(--archival-accent)]');
+                }, 2200);
+            }
+
+            // Export 1: SVG Copy & Download
+            DOM.svgBtn.addEventListener('click', async () => {
+                if (!STATE.currentSpecimen) return;
+                const dims = getCanvasDimensions(STATE.currentRatio);
+                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+
+                const svgContent = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
+                    width: dims.w,
+                    height: dims.h,
+                    bg: theme.bg,
+                    stroke: theme.stroke,
+                    strokeWidth: 1.1,
+                    margin: 12,
+                    border: true
+                });
+
+                // Download file
+                const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `specimen_${STATE.currentSpecimen.accessionId}_${STATE.currentSeed.replace(/\s+/g, '_')}.svg`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                // Copy to clipboard
+                try {
+                    await navigator.clipboard.writeText(svgContent);
+                    buttonFeedback(DOM.svgBtn, DOM.svgBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ SVG SAVED ]');
+                } catch(e) {
+                    buttonFeedback(DOM.svgBtn, DOM.svgBtn.innerHTML, '<i class="fa-solid fa-download"></i> [ DOWNLOADED ]');
+                }
+            });
+
+            // Export 2: Animated SMIL SVG Download
+            DOM.animSvgBtn.addEventListener('click', () => {
+                if (!STATE.currentSpecimen) return;
+                const dims = getCanvasDimensions(STATE.currentRatio);
+                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+
+                const animSvgContent = window.FishDraw.draw_svg_anim(STATE.currentSpecimen.polylines, STATE.animSpeed, {
+                    width: dims.w,
+                    height: dims.h,
+                    bg: theme.bg,
+                    stroke: theme.stroke,
+                    strokeWidth: 1.1,
+                    margin: 12,
+                    border: true
+                });
+
+                const blob = new Blob([animSvgContent], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `animated_${STATE.currentSpecimen.accessionId}_${STATE.currentSeed.replace(/\s+/g, '_')}.svg`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                buttonFeedback(DOM.animSvgBtn, DOM.animSvgBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ ANIM SAVED ]');
+            });
+
+            // Export 3: PNG 300DPI Render with Paper Grain Texture
+            DOM.pngBtn.addEventListener('click', () => {
+                if (!STATE.currentSpecimen) return;
+                const origHtml = DOM.pngBtn.innerHTML;
+                DOM.pngBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> [ RENDERING ]';
+
+                const dims = getCanvasDimensions(STATE.currentRatio);
+                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+
+                // High resolution scale (2.5x base for crisp 300DPI equivalent)
+                const scale = 2.5;
+                const canvasW = Math.round(dims.w * scale);
+                const canvasH = Math.round(dims.h * scale);
+
+                const svgMarkup = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
+                    width: dims.w,
+                    height: dims.h,
+                    bg: theme.bg,
+                    stroke: theme.stroke,
+                    strokeWidth: 1.1,
+                    margin: 12,
+                    border: true
+                });
+
+                const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const img = new Image();
+
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvasW;
+                    canvas.height = canvasH;
+                    const ctx = canvas.getContext('2d');
+
+                    // Base matte surface fill
+                    ctx.fillStyle = theme.bg;
+                    ctx.fillRect(0, 0, canvasW, canvasH);
+
+                    // Draw procedural high-res SVG
+                    ctx.drawImage(img, 0, 0, canvasW, canvasH);
+                    URL.revokeObjectURL(url);
+
+                    // Add subtle paper grain noise to PNG
+                    try {
+                        const imgData = ctx.getImageData(0, 0, canvasW, canvasH);
+                        const data = imgData.data;
+                        for (let i = 0; i < data.length; i += 4) {
+                            const noise = (Math.random() - 0.5) * 8;
+                            data[i] = Math.min(255, Math.max(0, data[i] + noise));
+                            data[i+1] = Math.min(255, Math.max(0, data[i+1] + noise));
+                            data[i+2] = Math.min(255, Math.max(0, data[i+2] + noise));
+                        }
+                        ctx.putImageData(imgData, 0, 0);
+                    } catch(err) {
+                        console.warn("Canvas noise filter bypassed:", err);
+                    }
+
+                    // Download PNG
+                    const pngUrl = canvas.toDataURL('image/png');
+                    const a = document.createElement('a');
+                    a.download = `archival_plate_${STATE.currentSpecimen.accessionId}.png`;
+                    a.href = pngUrl;
+                    a.click();
+
+                    buttonFeedback(DOM.pngBtn, origHtml, '<i class="fa-solid fa-check"></i> [ PNG SAVED ]');
+                };
+
+                img.src = url;
+            });
+
+            // Export 4: Plotter CSV Coordinates
+            DOM.plotterBtn.addEventListener('click', () => {
+                if (!STATE.currentSpecimen) return;
+                const polylines = STATE.currentSpecimen.polylines;
+                const csvRows = polylines.map(p => p.map(pt => `${pt[0].toFixed(2)},${pt[1].toFixed(2)}`).join(';'));
+                const csvContent = `# FISH VAULT // PLOTTER VECTOR STROKE COORDINATES\n# TAXON: ${STATE.currentSeed}\n# ACCESSION: ${STATE.currentSpecimen.accessionId}\n# FORMAT: x1,y1;x2,y2;x3,y3... (ONE POLYLINE PER ROW)\n` + csvRows.join('\n');
+
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.download = `plotter_${STATE.currentSpecimen.accessionId}.csv`;
+                a.href = url;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                buttonFeedback(DOM.plotterBtn, DOM.plotterBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ CSV EXPORTED ]');
+            });
+
+            // Export 5: Embed Protocol Modal / Copy
+            DOM.embedBtn.addEventListener('click', async () => {
+                const embedUrl = `${window.location.origin}${window.location.pathname}?seed=${encodeURIComponent(STATE.currentSeed)}&theme=${STATE.currentTheme}&w=${STATE.currentRatio.w}&h=${STATE.currentRatio.h}&mode=embed`;
+                const iframeCode = `<iframe src="${embedUrl}" width="100%" height="450" frameborder="0" style="border:1px solid #DDD5C5;background:#EFE9DC;" allowtransparency="true"></iframe>`;
+
+                try {
+                    await navigator.clipboard.writeText(iframeCode);
+                    buttonFeedback(DOM.embedBtn, DOM.embedBtn.innerHTML, '<i class="fa-solid fa-check"></i> [ EMBED CODE COPIED ]');
+                } catch(e) {
+                    prompt("Archival Embed Iframe Snippet:", iframeCode);
+                }
+            });
+
+            // Fullscreen Viewer Modal
+            DOM.fullscreenBtn.addEventListener('click', () => {
+                if (!STATE.currentSpecimen) return;
+                DOM.viewerTitle.textContent = `SPECIMEN PLATE // ${STATE.currentSeed.toUpperCase()}`;
+                DOM.viewerSeq.textContent = `ACCESSION: ${STATE.currentSpecimen.accessionId}`;
+                
+                const dims = getCanvasDimensions(STATE.currentRatio);
+                const theme = STATE.paletteConfig[STATE.currentTheme] || STATE.paletteConfig.linnaean;
+
+                const svgMarkup = window.FishDraw.draw_svg(STATE.currentSpecimen.polylines, {
+                    width: dims.w,
+                    height: dims.h,
+                    bg: 'transparent',
+                    stroke: theme.stroke,
+                    strokeWidth: 1.1,
+                    margin: 12,
+                    border: true
+                });
+
+                DOM.viewerContent.innerHTML = svgMarkup;
+                DOM.fullscreenViewer.classList.add('active');
+            });
+
+            DOM.viewerClose.addEventListener('click', () => {
+                DOM.fullscreenViewer.classList.remove('active');
+            });
+
+            DOM.viewerDownloadSvg.addEventListener('click', () => {
+                DOM.svgBtn.click();
+            });
+
+            DOM.viewerDownloadPng.addEventListener('click', () => {
+                DOM.pngBtn.click();
+            });
+
+            // Close modal on Escape
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && DOM.fullscreenViewer.classList.contains('active')) {
+                    DOM.fullscreenViewer.classList.remove('active');
+                }
+            });
+
+            // PostMessage external control protocol
+            window.addEventListener('message', (e) => {
+                if (!e.data || typeof e.data !== 'object') return;
+                const { type, data } = e.data;
+                if (type === 'SET_SEED' && data.seed) {
+                    DOM.seedInput.value = data.seed;
+                    synthesizeSpecimen();
+                } else if (type === 'SET_THEME' && data.theme) {
+                    STATE.currentTheme = data.theme;
+                    DOM.themeSelect.value = data.theme;
+                    document.body.dataset.theme = data.theme;
+                    renderViewport();
+                }
+            });
+
+            // Initial URL Parameter Parsing
+            function initFromUrl() {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('mode') === 'embed') {
+                    document.body.dataset.mode = 'embed';
+                }
+
+                if (params.get('seed')) {
+                    DOM.seedInput.value = params.get('seed');
+                }
+
+                if (params.get('theme')) {
+                    const theme = params.get('theme');
+                    if (STATE.paletteConfig[theme]) {
+                        STATE.currentTheme = theme;
+                        DOM.themeSelect.value = theme;
+                        document.body.dataset.theme = theme;
+                    }
+                }
+
+                if (params.get('mode_render') === 'anim') {
+                    STATE.renderMode = 'anim';
+                    DOM.modeAnimBtn.classList.add('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                    DOM.modeStaticBtn.classList.remove('bg-[var(--archival-surface)]', 'text-[var(--archival-fg)]', 'font-semibold');
+                }
+
+                if (params.get('w') && params.get('h')) {
+                    const pw = params.get('w');
+                    const ph = params.get('h');
+                    DOM.ratioBtns.forEach(btn => {
+                        if (btn.dataset.w === pw && btn.dataset.h === ph) {
+                            DOM.ratioBtns.forEach(b => b.removeAttribute('data-active'));
+                            btn.setAttribute('data-active', 'true');
+                            STATE.currentRatio = { w: parseFloat(pw), h: parseFloat(ph) };
+                        }
+                    });
+                }
+
+                // Initial Synthesis Run
+                synthesizeSpecimen();
+            }
+
+            // Register Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').catch(err => {
+                        console.warn('SW registration warning:', err);
+                    });
+                });
+            }
+
+            // Kick off
+            initFromUrl();
+
+        })();
+    </script>
+</body>
+</html>

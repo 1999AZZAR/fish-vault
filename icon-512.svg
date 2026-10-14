@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#E8E0D0"/>
+  <rect x="64" y="64" width="384" height="384" stroke="#8B1A1A" stroke-width="4"/>
+  <path d="M256 64V448" stroke="#8B1A1A" stroke-width="2" stroke-dasharray="8 8" opacity="0.4"/>
+  <path d="M64 256H448" stroke="#8B1A1A" stroke-width="2" stroke-dasharray="8 8" opacity="0.4"/>
+  <!-- Minimalist fish silhouette linework -->
+  <path d="M108 256 C150 180 310 180 384 256 C310 332 150 332 108 256 Z" stroke="#2A2520" stroke-width="6" fill="none"/>
+  <path d="M384 256 L438 202 L438 310 Z" stroke="#2A2520" stroke-width="6" fill="#8B1A1A" fill-opacity="0.15"/>
+  <circle cx="170" cy="245" r="9" fill="#8B1A1A"/>
+  <path d="M228 208 C254 224 268 245 268 256 C268 267 254 288 228 304" stroke="#7A7068" stroke-width="4" stroke-dasharray="6 8"/>
+  <path d="M54 74H74 M64 54V74 M458 74H438 M448 54V74 M54 438H74 M64 458V438 M458 438H438 M448 458V438" stroke="#7A7068" stroke-width="2"/>
+</svg>

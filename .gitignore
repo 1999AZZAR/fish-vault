@@ -1,0 +1,19 @@
+# System & Logs
+.DS_Store
+Thumbs.db
+*.log
+
+# Node & Dependencies
+node_modules/
+npm-debug.log*
+
+# Environment & Temp
+.env
+.env.local
+/tmp/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
