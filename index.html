@@ -587,6 +587,7 @@
 
     <!-- Core Engine Scripts -->
     <script src="js/fishdraw.js?v=1.0.4"></script>
+    <script src="js/generational-cache.js?v=1.0.0"></script>
     <script>
         (function() {
             // Configuration & State
@@ -704,8 +705,23 @@
                 }
             }
 
-            // Synthesize Specimen using FishDraw Engine
-            function synthesizeSpecimen() {
+            function applyTelemetry(specimen, tElapsed, isCached) {
+                DOM.accessionBadge.textContent = specimen.accessionId;
+                if (DOM.telTaxon) DOM.telTaxon.textContent = specimen.taxon;
+                DOM.telLength.textContent = specimen.metrics.standardLength;
+                DOM.telDepth.textContent = `${specimen.metrics.bodyDepth} (${specimen.metrics.aspectRatio})`;
+                DOM.telCurvature.textContent = specimen.metrics.curvature;
+                DOM.telTail.textContent = specimen.metrics.tailMorphology;
+                DOM.telScale.textContent = specimen.metrics.scaleType;
+                DOM.telPattern.textContent = specimen.metrics.patternType;
+                DOM.telDentition.textContent = `${specimen.metrics.dentition} / ${specimen.metrics.barbels}`;
+                const cacheTag = isCached ? ' [GEN_CACHE]' : '';
+                DOM.telHash.textContent = `${specimen.metrics.hashHex}${cacheTag}`;
+            }
+
+            // Synthesize Specimen using FishDraw Engine with Generational Cache
+            async function synthesizeSpecimen() {
+                const t0 = performance.now();
                 const idLoadVal = DOM.idLoadInput.value.trim();
                 let inputVal = DOM.seedInput.value.trim();
                 const dims = getCanvasDimensions(STATE.currentRatio);
@@ -717,15 +733,44 @@
                     includeLabel: true
                 };
 
+                let keySeed;
                 if (idLoadVal && idLoadVal.includes('-')) {
                     specimenOpts.id = idLoadVal;
                     STATE.currentNarrative = idLoadVal;
                     STATE.currentSeed = idLoadVal;
+                    keySeed = idLoadVal;
                 } else {
                     inputVal = inputVal || 'Reflections on Archival Ichthyology';
                     specimenOpts.narrative = inputVal;
                     STATE.currentNarrative = inputVal;
                     STATE.currentSeed = inputVal;
+                    keySeed = inputVal;
+                }
+
+                const cacheKey = typeof GenerationalCache !== 'undefined'
+                    ? GenerationalCache.makeKey('FV', keySeed, STATE.currentRatio.w, STATE.currentRatio.h, STATE.palette.name || 'default', STATE.renderMode)
+                    : null;
+
+                if (cacheKey) {
+                    const cached = await GenerationalCache.get(cacheKey);
+                    if (cached && cached.specimen && cached.svg) {
+                        STATE.currentSpecimen = cached.specimen;
+                        STATE.currentTaxon = cached.specimen.taxon;
+                        STATE.currentId = cached.specimen.accessionId;
+                        applyTelemetry(cached.specimen, performance.now() - t0, true);
+                        DOM.target.innerHTML = cached.svg;
+                        const svgEl = DOM.target.querySelector('svg');
+                        if (svgEl) {
+                            svgEl.style.aspectRatio = `${dims.w} / ${dims.h}`;
+                            if (document.body.dataset.mode === 'embed') {
+                                svgEl.classList.add('w-full', 'h-full', 'max-w-full', 'max-h-full', 'object-contain');
+                            } else {
+                                svgEl.classList.add('w-full', 'h-full', 'max-h-[500px]', 'object-contain', 'transition-all');
+                            }
+                        }
+                        if (document.body.dataset.mode !== 'embed') syncUrl(idLoadVal, inputVal);
+                        return;
+                    }
                 }
 
                 // Call enhanced FishDraw engine with narrative injection support
@@ -735,20 +780,15 @@
                 STATE.currentTaxon = specimen.taxon;
                 STATE.currentId = specimen.accessionId;
 
-                // Update Telemetry Panel
-                DOM.accessionBadge.textContent = specimen.accessionId;
-                if (DOM.telTaxon) DOM.telTaxon.textContent = specimen.taxon;
-                DOM.telLength.textContent = specimen.metrics.standardLength;
-                DOM.telDepth.textContent = `${specimen.metrics.bodyDepth} (${specimen.metrics.aspectRatio})`;
-                DOM.telCurvature.textContent = specimen.metrics.curvature;
-                DOM.telTail.textContent = specimen.metrics.tailMorphology;
-                DOM.telScale.textContent = specimen.metrics.scaleType;
-                DOM.telPattern.textContent = specimen.metrics.patternType;
-                DOM.telDentition.textContent = `${specimen.metrics.dentition} / ${specimen.metrics.barbels}`;
-                DOM.telHash.textContent = specimen.metrics.hashHex;
-
-                // Render into Viewport
+                applyTelemetry(specimen, performance.now() - t0, false);
                 renderViewport();
+
+                if (cacheKey && typeof GenerationalCache !== 'undefined') {
+                    GenerationalCache.set(cacheKey, {
+                        specimen: specimen,
+                        svg: DOM.target.innerHTML
+                    });
+                }
 
                 // Sync URL if not in embed mode
                 if (document.body.dataset.mode !== 'embed') {
